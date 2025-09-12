@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.5)
-project(CmdRunnerQt)
+project(CMD-Manager)
 
 # Enable Qt's automatic MOC (Meta-Object Compiler)
 set(CMAKE_AUTOMOC ON)
@@ -8,7 +8,7 @@ set(CMAKE_AUTOMOC ON)
 find_package(Qt5 COMPONENTS Widgets REQUIRED)
 
 # Define the executable
-add_executable(CmdRunnerQt
+add_executable(CMD-Manager
     main.cpp
     mainwindow.cpp
     mainwindow.h
@@ -17,10 +17,10 @@ add_executable(CmdRunnerQt
 )
 
 # Link Qt5 libraries
-target_link_libraries(CmdRunnerQt Qt5::Widgets)
+target_link_libraries(CMD-Manager Qt5::Widgets)
 
 # Install the executable
-install(TARGETS CmdRunnerQt
+install(TARGETS CMD-Manager
     RUNTIME DESTINATION bin        # Windows & Linux
     BUNDLE DESTINATION .           # macOS .app bundles
     COMPONENT Runtime
@@ -35,16 +35,16 @@ install(FILES
 
 # Optional: Install documentation
 install(FILES README.md
-    DESTINATION share/doc/CmdRunnerQt
+    DESTINATION share/doc/CMD-Manager
 )
 
 # Include system libraries for packaging
 include(InstallRequiredSystemLibraries)
 
 # CPack configuration for cross-platform installers
-set(CPACK_PACKAGE_NAME "CmdRunnerQt")
+set(CPACK_PACKAGE_NAME "CMD-Manager")
 set(CPACK_PACKAGE_VERSION "1.0.0")
-set(CPACK_PACKAGE_CONTACT "yourname@example.com")
+set(CPACK_PACKAGE_CONTACT "kietdo0602@gmail.com")
 
 # Platform-specific packaging
 if(WIN32)
