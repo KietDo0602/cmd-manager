@@ -14,6 +14,8 @@ add_executable(CMD-Manager
     mainwindow.h
     terminaldialog.cpp
     terminaldialog.h
+    filerowwidget.cpp
+    filerowwidget.h
 )
 
 # Link Qt5 libraries

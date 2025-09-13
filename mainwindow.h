@@ -1,10 +1,13 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#include "filerowwidget.h"
+
 #include <QMainWindow>
 #include <QTextEdit>
 #include <QPushButton>
 #include <QVBoxLayout>
+#include <QGroupBox>
 #include <QProcess>
 #include <QFileDialog>
 #include <QMessageBox>
@@ -27,6 +30,7 @@ public:
 private slots:
     void onStartClicked();
     void onExecuteClicked();
+    void onClearClicked();
     void onInputButtonClicked();
     void onOutputButtonClicked();
     void onChooseDirClicked();
@@ -40,6 +44,9 @@ private:
     QPushButton *startButton;
     QPushButton *executeButton;
     QPushButton *chooseDirButton;
+    QPushButton *clearButton;
+
+    QGroupBox *filesGroup = nullptr;
 
     QVBoxLayout *mainLayout;
     QWidget *buttonContainer;
@@ -50,6 +57,12 @@ private:
 
     QString currentDir;
     QProcess *process;
+
+    QVector<QPushButton*> inputOutputButtons;
+    QVector<FileRowWidget*> fileRows;
+
+    bool filesGroupAdded = false;
+    QString commandTemplate;
 };
 
 #endif // MAINWINDOW_H

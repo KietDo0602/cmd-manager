@@ -6,7 +6,7 @@
 TerminalDialog::TerminalDialog(const QString &cmd, QWidget *parent)
     : QDialog(parent), process(new QProcess(this)) {
 
-    setWindowTitle("Command Output");
+    setWindowTitle("CMD Manager");
     resize(800, 600);
 
     auto *layout = new QVBoxLayout(this);
