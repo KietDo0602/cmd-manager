@@ -12,8 +12,6 @@ add_executable(CMD-Manager
     main.cpp
     mainwindow.cpp
     mainwindow.h
-    terminaldialog.cpp
-    terminaldialog.h
     filerowwidget.cpp
     filerowwidget.h
 )
