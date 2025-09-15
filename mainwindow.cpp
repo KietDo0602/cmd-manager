@@ -515,13 +515,13 @@ void MainWindow::onStartClicked() {
     }
 
     // Detect placeholder files in the command
-    QRegularExpression fileRegex(R"(([\w,\s-]+\.[A-Za-z0-9]+))");
+    QRegularExpression fileRegex(R"(\b[\w.-]+\.[A-Za-z0-9]+\b|<[\w-]+>)");
     QRegularExpressionMatchIterator it = fileRegex.globalMatch(cmdText);
 
     QStringList detectedFiles;
     while (it.hasNext()) {
         QRegularExpressionMatch match = it.next();
-        QString fileName = match.captured(1);
+        QString fileName = match.captured(0);
         if (!detectedFiles.contains(fileName)) {
             detectedFiles.append(fileName);
         }
@@ -561,41 +561,73 @@ void MainWindow::onStartClicked() {
 
 void MainWindow::onExecuteClicked() {
     QString finalCmd = commandTemplate;
+    
+    // Replace placeholders with properly quoted file paths
     for (FileRowWidget *row : fileRows) {
         if (!row->getSelectedFile().isEmpty()) {
-            finalCmd.replace(row->getPlaceholder(), "\"" + row->getSelectedFile() + "\"");
+            QString filePath = row->getSelectedFile();
+            // Escape any single quotes in the file path and wrap in single quotes
+            filePath.replace("'", "'\"'\"'"); // Replace ' with '"'"'
+            QString quotedPath = "'" + filePath + "'";
+            finalCmd.replace(row->getPlaceholder(), quotedPath);
         }
     }
 
+    // Show terminal output in a dialog
     QDialog *terminal = new QDialog(this);
-    terminal->setWindowTitle("CMD Manager");
+    terminal->setWindowTitle("CMD Manager - Command Execution");
     QVBoxLayout *layout = new QVBoxLayout(terminal);
 
     QTextEdit *output = new QTextEdit();
     output->setReadOnly(true);
+    output->setFont(QFont("Courier", 10)); // Use monospace font for better readability
     layout->addWidget(output);
 
     QPushButton *closeBtn = new QPushButton("Close");
     layout->addWidget(closeBtn);
     connect(closeBtn, &QPushButton::clicked, terminal, &QDialog::close);
 
+    // Display the command that will be executed
+    output->append("Working Directory: " + (currentDir.isEmpty() ? QDir::homePath() : currentDir));
+    output->append("Executing command:");
+    output->append(finalCmd);
+    output->append("----------------------------------------");
+
     process = new QProcess(this);
     connect(process, &QProcess::readyReadStandardOutput, [=]() {
-        output->append(process->readAllStandardOutput());
+        QString data = QString::fromLocal8Bit(process->readAllStandardOutput());
+        output->append(data);
+        output->moveCursor(QTextCursor::End);
     });
     connect(process, &QProcess::readyReadStandardError, [=]() {
-        output->append(process->readAllStandardError());
+        QString data = QString::fromLocal8Bit(process->readAllStandardError());
+        output->append(data);
+        output->moveCursor(QTextCursor::End);
+    });
+    connect(process, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished),
+            [=](int exitCode, QProcess::ExitStatus exitStatus) {
+        output->append("----------------------------------------");
+        output->append(QString("Process finished with exit code: %1").arg(exitCode));
+        if (exitStatus == QProcess::CrashExit) {
+            output->append("Process crashed!");
+        }
+        output->moveCursor(QTextCursor::End);
     });
 
     QString workingDir = currentDir.isEmpty() ? QDir::homePath() : currentDir;
     process->setWorkingDirectory(workingDir);
-    process->start("bash", {"-c", finalCmd});
+    
+    // Execute the command
+    process->start("/bin/bash", QStringList() << "-c" << finalCmd);
+    
+    if (!process->waitForStarted(3000)) {
+        output->append("Error: Failed to start the process!");
+    }
 
     terminal->resize(800, 500);
     terminal->exec();
 }
 
-// Keep existing methods...
 void MainWindow::onInputButtonClicked() {
     QPushButton *btn = qobject_cast<QPushButton*>(sender());
     int idx = buttonIndexMap[btn];
