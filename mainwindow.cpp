@@ -34,11 +34,13 @@ MainWindow::MainWindow(QWidget *parent)
     allCommandsButton->setFixedWidth(120);
     saveButton->setFixedWidth(100);
     
+    // Add stretch before and after the buttons to center them
+    topButtonsLayout->addStretch();
     topButtonsLayout->addWidget(newButton);
     topButtonsLayout->addWidget(allCommandsButton);
     topButtonsLayout->addWidget(saveButton);
-    topButtonsLayout->addStretch();
-    
+    topButtonsLayout->addStretch(); 
+
     connect(newButton, &QPushButton::clicked, this, &MainWindow::onNewClicked);
     connect(allCommandsButton, &QPushButton::clicked, this, &MainWindow::onAllCommandsClicked);
     connect(saveButton, &QPushButton::clicked, this, &MainWindow::onSaveClicked);
@@ -72,7 +74,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(executeButton, &QPushButton::clicked, this, &MainWindow::onExecuteClicked);
 
     clearButton = new QPushButton("Clear Commands");
-    clearButton->setFixedWidth(120);
+    clearButton->setFixedWidth(140);
     clearButton->hide();
 
     // Layout for Execute and Clear side by side
@@ -86,7 +88,89 @@ MainWindow::MainWindow(QWidget *parent)
     connect(clearButton, &QPushButton::clicked, this, &MainWindow::onClearClicked);
 
     setCentralWidget(central);
-    resize(900, 600);
+    setStyleSheet(R"(
+      QMainWindow {
+          background-color: #2B2B2B;
+      }
+
+      QWidget {
+          background-color: #2B2B2B;
+          color: #E0E0E0;
+      }
+
+      QToolBar {
+          background: #323232;
+          border: none;
+          spacing: 6px;
+      }
+      QToolBar QToolButton {
+          background: #3C3C3C;
+          color: #E0E0E0;
+          border-radius: 4px;
+          padding: 6px 10px;
+      }
+      QToolBar QToolButton:hover {
+          background: #505050;
+      }
+
+      QPushButton {
+          background-color: #3C3C3C;
+          border: 1px solid #555;
+          border-radius: 4px;
+          color: #E0E0E0;
+          padding: 6px 12px;
+      }
+      QPushButton:hover {
+          background-color: #505050;
+          border: 1px solid #666;
+      }
+      QPushButton:pressed {
+          background-color: #2E2E2E;
+      }
+
+      QLineEdit {
+          background: #1E1E1E;
+          border: 1px solid #555;
+          border-radius: 4px;
+          padding: 6px;
+          color: #E0E0E0;
+          selection-background-color: #0078D7;
+      }
+
+      QTextEdit {
+          background: #1E1E1E;
+          border: 1px solid #555;
+          border-radius: 4px;
+          color: #E0E0E0;
+          padding: 6px;
+      }
+
+      QLabel {
+          color: #E0E0E0;
+          font-weight: 500;
+      }
+
+      QGroupBox {
+          font-weight: bolder;
+          color: #E0E0E0;
+          font-weight: 500;
+      }
+
+      QMenuBar {
+          background-color: #2B2B2B;
+          color: #E0E0E0;
+      }
+      QMenuBar::item:selected {
+          background: #505050;
+      }
+
+      QStatusBar {
+          background: #2B2B2B;
+          color: #AAAAAA;
+      }
+    )");
+
+    resize(1280, 720);
 }
 
 MainWindow::~MainWindow() {

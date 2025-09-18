@@ -5,7 +5,7 @@
 FileRowWidget::FileRowWidget(const QString &placeholder, QWidget *parent)
     : QWidget(parent), placeholderFile(placeholder) {
 
-    fileLabel = new QLabel("📄 " + placeholder, this);
+    fileLabel = new QLabel(">> " + placeholder, this);
     roleCombo = new QComboBox(this);
     roleCombo->addItems({"Input", "Output"});
 
@@ -15,7 +15,7 @@ FileRowWidget::FileRowWidget(const QString &placeholder, QWidget *parent)
 
     QHBoxLayout *layout = new QHBoxLayout(this);
     layout->addWidget(fileLabel);
-    layout->addWidget(new QLabel("Role:"));
+    layout->addWidget(new QLabel("Type:"));
     layout->addWidget(roleCombo);
     layout->addWidget(actionButton);
     layout->addWidget(clearButton);
@@ -65,10 +65,12 @@ void FileRowWidget::updateUI() {
     if (!selectedFile.isEmpty()) {
         actionButton->hide();
         clearButton->show();
-        fileLabel->setText("📄 " + placeholderFile + " → " + selectedFile);
+        fileLabel->setText(">> " + placeholderFile + " → " + selectedFile);
+        fileLabel->setWordWrap(true);
     } else {
         actionButton->show();
         clearButton->hide();
-        fileLabel->setText("📄 " + placeholderFile);
+        fileLabel->setText(">> " + placeholderFile);
+        fileLabel->setWordWrap(true);
     }
 }

@@ -1,6 +1,8 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#include "filerowwidget.h"
+
 #include <QMainWindow>
 #include <QTextEdit>
 #include <QPushButton>
@@ -21,7 +23,8 @@
 #include <QLabel>
 #include <QSet>
 #include <QCloseEvent>
-#include "filerowwidget.h"
+#include <QAction>
+#include <QMenu>
 
 struct FilePlaceholder {
     QString original;
@@ -75,6 +78,8 @@ protected:
 private:
     // UI Components
     QVBoxLayout *mainLayout;
+    QMenu *fileMenu;
+    QAction *settingsAction;
     QPushButton *newButton;
     QPushButton *allCommandsButton;
     QPushButton *saveButton;
