@@ -120,7 +120,7 @@ Make sure to list any OS-specific problems inside the branch name or description
 
 ## 📝 To Do
 
-- [ ] Fix Save behavior when opening an existing settings
+- [ ] Fix Save behavior when opening an existing settings.
 - [ ] Can't interact with some window when terminal opened for another terminal.
 - [ ] Add shortcuts and let user configure them inside settings
 - [ ] Add Settings

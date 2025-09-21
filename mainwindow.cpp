@@ -1,4 +1,6 @@
 #include "mainwindow.h"
+
+#include <QScreen>
 #include <QGroupBox>
 #include <QApplication>
 #include <QHBoxLayout>
@@ -293,7 +295,7 @@ void MainWindow::onSaveClicked() {
 }
 
 void MainWindow::onAllCommandsClicked() {
-    CommandsMenuDialog *dialog = new CommandsMenuDialog(this);
+    CommandsMenuDialog *dialog = new CommandsMenuDialog(nullptr);
     dialog->setAttribute(Qt::WA_DeleteOnClose);
     dialog->show();
 }
@@ -511,7 +513,35 @@ QString MainWindow::getConfigFilePath() {
 
 void MainWindow::loadCommand(const QJsonObject &commandData) {
     // Clear existing state without confirmation
-    clearCommandsInternal();
+    // Don't use clearCommandsInternal() here as it clears currentCommandName
+    
+    // Clear command text
+    commandEdit->clear();
+
+    // Safely delete all file rows
+    for (FileRowWidget* row : fileRows) {
+        if (row) {
+            disconnect(row, nullptr, this, nullptr);
+            row->deleteLater();
+        }
+    }
+    fileRows.clear();
+
+    // Remove and delete filesGroup if it exists
+    if (filesGroup) {
+        mainLayout->removeWidget(filesGroup);
+        filesGroup->deleteLater();
+        filesGroup = nullptr;
+    }
+
+    // Reset buttons
+    executeButton->hide();
+    clearButton->hide();
+    startButton->show();
+    filesGroupAdded = false;
+    
+    // Clear command template
+    commandTemplate.clear();
     
     // Load command text
     commandEdit->setPlainText(commandData["command"].toString());
@@ -544,6 +574,10 @@ void MainWindow::loadCommand(const QJsonObject &commandData) {
     
     // Store original state for change detection
     storeOriginalState();
+    
+    // Reset unsaved changes flag after loading
+    hasUnsavedChanges = false;
+    updateWindowTitle();
 }
 
 void MainWindow::updateDirectoryButton() {
@@ -657,14 +691,15 @@ void MainWindow::onExecuteClicked() {
         }
     }
 
-    // Show terminal output in a dialog
-    QDialog *terminal = new QDialog(this);
+    // Create independent terminal dialog
+    QDialog *terminal = new QDialog(nullptr); // No parent - makes it independent
+    terminal->setAttribute(Qt::WA_DeleteOnClose);
     terminal->setWindowTitle("CMD Manager - Command Execution");
     QVBoxLayout *layout = new QVBoxLayout(terminal);
 
     QTextEdit *output = new QTextEdit();
     output->setReadOnly(true);
-    output->setFont(QFont("Courier", 10)); // Use monospace font for better readability
+    output->setFont(QFont("Courier", 10));
     layout->addWidget(output);
 
     QPushButton *closeBtn = new QPushButton("Close");
@@ -677,18 +712,18 @@ void MainWindow::onExecuteClicked() {
     output->append(finalCmd);
     output->append("----------------------------------------");
 
-    process = new QProcess(this);
-    connect(process, &QProcess::readyReadStandardOutput, [=]() {
-        QString data = QString::fromLocal8Bit(process->readAllStandardOutput());
+    QProcess *terminalProcess = new QProcess(terminal); // Use local process
+    connect(terminalProcess, &QProcess::readyReadStandardOutput, [=]() {
+        QString data = QString::fromLocal8Bit(terminalProcess->readAllStandardOutput());
         output->append(data);
         output->moveCursor(QTextCursor::End);
     });
-    connect(process, &QProcess::readyReadStandardError, [=]() {
-        QString data = QString::fromLocal8Bit(process->readAllStandardError());
+    connect(terminalProcess, &QProcess::readyReadStandardError, [=]() {
+        QString data = QString::fromLocal8Bit(terminalProcess->readAllStandardError());
         output->append(data);
         output->moveCursor(QTextCursor::End);
     });
-    connect(process, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished),
+    connect(terminalProcess, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished),
             [=](int exitCode, QProcess::ExitStatus exitStatus) {
         output->append("----------------------------------------");
         output->append(QString("Process finished with exit code: %1").arg(exitCode));
@@ -699,17 +734,17 @@ void MainWindow::onExecuteClicked() {
     });
 
     QString workingDir = currentDir.isEmpty() ? QDir::homePath() : currentDir;
-    process->setWorkingDirectory(workingDir);
+    terminalProcess->setWorkingDirectory(workingDir);
     
     // Execute the command
-    process->start("/bin/bash", QStringList() << "-c" << finalCmd);
+    terminalProcess->start("/bin/bash", QStringList() << "-c" << finalCmd);
     
-    if (!process->waitForStarted(3000)) {
+    if (!terminalProcess->waitForStarted(3000)) {
         output->append("Error: Failed to start the process!");
     }
 
     terminal->resize(800, 500);
-    terminal->exec();
+    terminal->show(); // Use show() instead of exec() to make it non-modal
 }
 
 void MainWindow::onInputButtonClicked() {
@@ -771,11 +806,24 @@ void MainWindow::clearDynamicButtons() {
     buttonIndexMap.clear();
 }
 
-// Commands Menu Dialog Implementation - Keep existing...
 CommandsMenuDialog::CommandsMenuDialog(QWidget *parent) : QDialog(parent) {
     setWindowTitle("Commands Menu");
-    setModal(true);
+    setModal(false); // Make it non-modal
+    setAttribute(Qt::WA_DeleteOnClose); // Auto-delete when closed
     resize(500, 400);
+    
+    // Center the dialog on screen if no parent
+    if (!parent) {
+        setWindowFlags(Qt::Window); // Make it a top-level window
+        
+        // Center on screen using QScreen (modern Qt way)
+        if (QApplication::primaryScreen()) {
+            QRect screenGeometry = QApplication::primaryScreen()->geometry();
+            int x = (screenGeometry.width() - width()) / 2;
+            int y = (screenGeometry.height() - height()) / 2;
+            move(x, y);
+        }
+    }
     
     QVBoxLayout *layout = new QVBoxLayout(this);
     
@@ -848,8 +896,6 @@ void CommandsMenuDialog::onCommandSelected() {
         MainWindow::openedCommands.insert(commandName);
         newWindow->loadCommand(commandData);
         newWindow->show();
-        
-        close();
     }
 }
 
