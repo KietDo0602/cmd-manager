@@ -14,6 +14,11 @@
 #include <QJsonArray>
 #include <QCloseEvent>
 
+// Helper function for taskbar grouping
+void setupTaskbarGrouping(QWidget* widget) {
+    widget->setProperty("class", "cmd-manager");
+}
+
 // Initialize static member
 QSet<QString> MainWindow::openedCommands;
 
@@ -21,6 +26,10 @@ MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), process(new QProcess(this)) {
 
     setWindowTitle("CMD Manager");
+    setupTaskbarGrouping(this);
+
+    // Set window class name for taskbar grouping
+    setProperty("class", "cmd-manager");
 
     QWidget *central = new QWidget(this);
     mainLayout = new QVBoxLayout(central);
@@ -695,6 +704,13 @@ void MainWindow::onExecuteClicked() {
     QDialog *terminal = new QDialog(nullptr); // No parent - makes it independent
     terminal->setAttribute(Qt::WA_DeleteOnClose);
     terminal->setWindowTitle("CMD Manager - Command Execution");
+
+    // Setup taskbar grouping
+    setupTaskbarGrouping(terminal);
+
+    // Set window class name for taskbar grouping
+    terminal->setProperty("class", "cmd-manager");
+
     QVBoxLayout *layout = new QVBoxLayout(terminal);
 
     QTextEdit *output = new QTextEdit();
@@ -811,6 +827,12 @@ CommandsMenuDialog::CommandsMenuDialog(QWidget *parent) : QDialog(parent) {
     setModal(false); // Make it non-modal
     setAttribute(Qt::WA_DeleteOnClose); // Auto-delete when closed
     resize(500, 400);
+
+    // Setup taskbar grouping
+    setupTaskbarGrouping(this);
+
+    // Set window class name for taskbar grouping
+    setProperty("class", "cmd-manager");
     
     // Center the dialog on screen if no parent
     if (!parent) {

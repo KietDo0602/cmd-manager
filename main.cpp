@@ -97,6 +97,13 @@ class TerminalWidget : public QWidget {
 
 int main(int argc, char *argv[]) {
     QApplication app(argc, argv);
+
+    // Set application properties for taskbar grouping
+    app.setApplicationName("CMD Manager");
+    app.setApplicationDisplayName("CMD Manager");
+    app.setOrganizationName("Kiet Do");
+    app.setApplicationVersion("1.0");
+
     MainWindow w;
     w.show();
     return app.exec();
