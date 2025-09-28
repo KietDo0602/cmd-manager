@@ -122,9 +122,9 @@ Make sure to list any OS-specific problems inside the branch name or description
 
 - [x] Fix Save behavior when opening an existing settings.
 - [x] Can't interact with some window when terminal opened for another terminal.
-- [ ] Add shortcuts and let user configure them inside settings
-- [ ] Add Settings
-- [ ] Add color theme
+- [x] Add shortcuts and let user configure them inside settings
+- [x] Add Settings
+- [x] Add color theme
 - [ ] Add Help and About section
 - [ ] Add Logo and more icons for the Program
 - [ ] Release 1.0 version

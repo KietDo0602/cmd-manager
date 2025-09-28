@@ -97,6 +97,17 @@ class TerminalWidget : public QWidget {
 
 int main(int argc, char *argv[]) {
     QApplication app(argc, argv);
+
+    // Set application identity
+    app.setApplicationName("CMD-Manager");
+    app.setApplicationDisplayName("CMD Manager");
+    app.setOrganizationName("CMD Manager");
+    app.setApplicationVersion("1.0");
+    app.setDesktopFileName("cmd-manager");
+    
+    // Set application icon
+    app.setWindowIcon(QIcon(":/images/app_icon.png"));
+
     MainWindow w;
     w.show();
     return app.exec();

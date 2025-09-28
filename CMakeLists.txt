@@ -14,7 +14,15 @@ add_executable(CMD-Manager
     mainwindow.h
     filerowwidget.cpp
     filerowwidget.h
+    settingsmanager.cpp
+    settingsmanager.h
+    settingsdialog.cpp
+    settingsdialog.h
 )
+
+# Compile Qt resource file
+qt5_add_resources(RESOURCE_FILES resources.qrc)
+target_sources(CMD-Manager PRIVATE ${RESOURCE_FILES})
 
 # Link Qt5 libraries
 target_link_libraries(CMD-Manager Qt5::Widgets)

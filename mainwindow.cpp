@@ -31,22 +31,25 @@ MainWindow::MainWindow(QWidget *parent)
     newButton = new QPushButton("New");
     allCommandsButton = new QPushButton("All Commands");
     saveButton = new QPushButton("Save");
-    
-    newButton->setFixedWidth(100);
-    allCommandsButton->setFixedWidth(120);
-    saveButton->setFixedWidth(100);
+    settingsButton = new QPushButton("Settings");
     
     // Add stretch before and after the buttons to center them
     topButtonsLayout->addStretch();
     topButtonsLayout->addWidget(newButton);
     topButtonsLayout->addWidget(allCommandsButton);
     topButtonsLayout->addWidget(saveButton);
+    topButtonsLayout->addWidget(settingsButton);
     topButtonsLayout->addStretch(); 
 
     connect(newButton, &QPushButton::clicked, this, &MainWindow::onNewClicked);
     connect(allCommandsButton, &QPushButton::clicked, this, &MainWindow::onAllCommandsClicked);
     connect(saveButton, &QPushButton::clicked, this, &MainWindow::onSaveClicked);
-    
+    connect(settingsButton, &QPushButton::clicked, this, &MainWindow::onSettingsClicked);
+    connect(SettingsManager::instance(), &SettingsManager::themeChanged, 
+        this, &MainWindow::applyThemeAndFont);
+    connect(SettingsManager::instance(), &SettingsManager::fontChanged, 
+        this, &MainWindow::applyThemeAndFont);
+
     mainLayout->addLayout(topButtonsLayout);
 
     // Directory chooser
@@ -90,89 +93,14 @@ MainWindow::MainWindow(QWidget *parent)
     connect(clearButton, &QPushButton::clicked, this, &MainWindow::onClearClicked);
 
     setCentralWidget(central);
-    setStyleSheet(R"(
-      QMainWindow {
-          background-color: #2B2B2B;
-      }
-
-      QWidget {
-          background-color: #2B2B2B;
-          color: #E0E0E0;
-      }
-
-      QToolBar {
-          background: #323232;
-          border: none;
-          spacing: 6px;
-      }
-      QToolBar QToolButton {
-          background: #3C3C3C;
-          color: #E0E0E0;
-          border-radius: 4px;
-          padding: 6px 10px;
-      }
-      QToolBar QToolButton:hover {
-          background: #505050;
-      }
-
-      QPushButton {
-          background-color: #3C3C3C;
-          border: 1px solid #555;
-          border-radius: 4px;
-          color: #E0E0E0;
-          padding: 6px 12px;
-      }
-      QPushButton:hover {
-          background-color: #505050;
-          border: 1px solid #666;
-      }
-      QPushButton:pressed {
-          background-color: #2E2E2E;
-      }
-
-      QLineEdit {
-          background: #1E1E1E;
-          border: 1px solid #555;
-          border-radius: 4px;
-          padding: 6px;
-          color: #E0E0E0;
-          selection-background-color: #0078D7;
-      }
-
-      QTextEdit {
-          background: #1E1E1E;
-          border: 1px solid #555;
-          border-radius: 4px;
-          color: #E0E0E0;
-          padding: 6px;
-      }
-
-      QLabel {
-          color: #E0E0E0;
-          font-weight: 500;
-      }
-
-      QGroupBox {
-          font-weight: bolder;
-          color: #E0E0E0;
-          font-weight: 500;
-      }
-
-      QMenuBar {
-          background-color: #2B2B2B;
-          color: #E0E0E0;
-      }
-      QMenuBar::item:selected {
-          background: #505050;
-      }
-
-      QStatusBar {
-          background: #2B2B2B;
-          color: #AAAAAA;
-      }
-    )");
 
     resize(1280, 720);
+
+    // Setup keyboard shortcuts
+    setupKeyboardShortcuts();
+
+    // Apply initial theme and font
+    applyThemeAndFont();
 }
 
 MainWindow::~MainWindow() {
@@ -666,7 +594,7 @@ void MainWindow::onStartClicked() {
     executeButton->show();
     clearButton->show();
 
-    // Add this group to the main layout
+    // Add group to the main layout
     mainLayout->addWidget(filesGroup);
     filesGroupAdded = true;
 
@@ -835,11 +763,13 @@ CommandsMenuDialog::CommandsMenuDialog(QWidget *parent) : QDialog(parent) {
     
     newButton = new QPushButton("New");
     openButton = new QPushButton("Open");
+    runButton = new QPushButton("Run");
     deleteButton = new QPushButton("Delete");
     closeButton = new QPushButton("Close");
     
     buttonsLayout->addWidget(newButton);
     buttonsLayout->addWidget(openButton);
+    buttonsLayout->addWidget(runButton);
     buttonsLayout->addWidget(deleteButton);
     buttonsLayout->addStretch();
     buttonsLayout->addWidget(closeButton);
@@ -848,11 +778,26 @@ CommandsMenuDialog::CommandsMenuDialog(QWidget *parent) : QDialog(parent) {
     
     connect(newButton, &QPushButton::clicked, this, &CommandsMenuDialog::onNewClicked);
     connect(openButton, &QPushButton::clicked, this, &CommandsMenuDialog::onCommandSelected);
+    connect(runButton, &QPushButton::clicked, this, &CommandsMenuDialog::onRunCommand);
+
     connect(deleteButton, &QPushButton::clicked, this, &CommandsMenuDialog::onDeleteCommand);
     connect(closeButton, &QPushButton::clicked, this, &QDialog::close);
     connect(commandsList, &QListWidget::itemDoubleClicked, this, &CommandsMenuDialog::onCommandSelected);
     
     refreshCommandsList();
+
+    // Apply current theme after dialog is created
+    SettingsManager* settings = SettingsManager::instance();
+    setStyleSheet(settings->getCurrentThemeStyleSheet());
+    
+    QFont appFont(settings->getFontFamily(), settings->getFontSize());
+    setFont(appFont);
+    
+    // Apply to all the child widgets
+    QList<QWidget*> widgets = findChildren<QWidget*>();
+    for (QWidget* widget : widgets) {
+        widget->setFont(appFont);
+    }
 }
 
 void CommandsMenuDialog::onNewClicked() {
@@ -955,3 +900,238 @@ QString CommandsMenuDialog::getConfigFilePath() {
     return configDir + "/CMDManager/commands.json";
 }
 
+void MainWindow::onSettingsClicked() {
+    SettingsDialog *dialog = new SettingsDialog(this);
+    connect(dialog, &QDialog::accepted, this, &MainWindow::applyThemeAndFont);
+    dialog->exec();
+    dialog->deleteLater();
+}
+
+void MainWindow::applyThemeAndFont() {
+    SettingsManager::instance()->applyThemeToAllWindows();
+}
+
+void CommandsMenuDialog::onRunCommand() {
+    QListWidgetItem *currentItem = commandsList->currentItem();
+    if (!currentItem) {
+        QMessageBox::warning(this, "No Selection", "Please select a command to run.");
+        return;
+    }
+    
+    QString commandName = currentItem->text();
+    QJsonObject commands = loadCommandsFromJson();
+    
+    if (commands.contains(commandName)) {
+        QJsonObject commandData = commands[commandName].toObject();
+        executeCommand(commandData);
+    }
+}
+
+void CommandsMenuDialog::executeCommand(const QJsonObject &commandData) {
+    QString command = commandData["command"].toString();
+    QString directory = commandData["directory"].toString();
+    QJsonArray filesArray = commandData["files"].toArray();
+    
+    if (command.isEmpty()) {
+        QMessageBox::warning(this, "Empty Command", "The selected command is empty.");
+        return;
+    }
+    
+    // Create a dialog to show file mappings and allow user to select files
+    QDialog *fileDialog = new QDialog(this);
+    fileDialog->setWindowTitle("Configure Files for Execution");
+    fileDialog->setModal(true);
+    fileDialog->resize(600, 400);
+    
+    QVBoxLayout *layout = new QVBoxLayout(fileDialog);
+    
+    // Add command info
+    layout->addWidget(new QLabel(QString("Command: %1").arg(command)));
+    layout->addWidget(new QLabel(QString("Directory: %1").arg(directory.isEmpty() ? "(Default)" : directory)));
+    
+    // Create file row widgets for each file in the command
+    QList<FileRowWidget*> fileRows;
+    
+    if (filesArray.isEmpty()) {
+        // If no file data saved, detect files from command text
+        QRegularExpression fileRegex(R"(\b[\w.-]+\.[A-Za-z0-9]+\b|<[\w-]+>)");
+        QRegularExpressionMatchIterator it = fileRegex.globalMatch(command);
+        
+        QStringList detectedFiles;
+        while (it.hasNext()) {
+            QRegularExpressionMatch match = it.next();
+            QString fileName = match.captured(0);
+            if (!detectedFiles.contains(fileName)) {
+                detectedFiles.append(fileName);
+            }
+        }
+        
+        for (const QString &file : detectedFiles) {
+            FileRowWidget *row = new FileRowWidget(file, fileDialog);
+            fileRows.append(row);
+            layout->addWidget(row);
+        }
+    } else {
+        // Use saved file data
+        for (int i = 0; i < filesArray.size(); ++i) {
+            QJsonObject fileData = filesArray[i].toObject();
+            QString placeholder = fileData["placeholder"].toString();
+            
+            FileRowWidget *row = new FileRowWidget(placeholder, fileDialog);
+            row->setRole(fileData["role"].toString());
+            
+            QString selectedFile = fileData["selectedFile"].toString();
+            if (!selectedFile.isEmpty()) {
+                row->setSelectedFile(selectedFile);
+            }
+            
+            fileRows.append(row);
+            layout->addWidget(row);
+        }
+    }
+    
+    // Add buttons
+    QHBoxLayout *buttonLayout = new QHBoxLayout();
+    QPushButton *executeBtn = new QPushButton("Execute");
+    QPushButton *cancelBtn = new QPushButton("Cancel");
+    
+    buttonLayout->addStretch();
+    buttonLayout->addWidget(executeBtn);
+    buttonLayout->addWidget(cancelBtn);
+    layout->addLayout(buttonLayout);
+    
+    connect(cancelBtn, &QPushButton::clicked, fileDialog, &QDialog::reject);
+    connect(executeBtn, &QPushButton::clicked, [=]() {
+        // Build the final command with file substitutions
+        QString finalCmd = command;
+        
+        // Replace placeholders with properly quoted file paths
+        for (FileRowWidget *row : fileRows) {
+            if (!row->getSelectedFile().isEmpty()) {
+                QString filePath = row->getSelectedFile();
+                // Escape any single quotes in the file path and wrap in single quotes
+                filePath.replace("'", "'\"'\"'"); // Replace ' with '"'"'
+                QString quotedPath = "'" + filePath + "'";
+                finalCmd.replace(row->getPlaceholder(), quotedPath);
+            }
+        }
+        
+        fileDialog->accept();
+        
+        // Create terminal execution window
+        QDialog *terminal = new QDialog(nullptr); // Independent window
+        terminal->setAttribute(Qt::WA_DeleteOnClose);
+        terminal->setWindowTitle("CMD Manager - Command Execution");
+        
+        QVBoxLayout *termLayout = new QVBoxLayout(terminal);
+
+        QTextEdit *output = new QTextEdit();
+        output->setReadOnly(true);
+        output->setFont(QFont("Courier", 10));
+        termLayout->addWidget(output);
+
+        QPushButton *closeBtn = new QPushButton("Close");
+        termLayout->addWidget(closeBtn);
+        connect(closeBtn, &QPushButton::clicked, terminal, &QDialog::close);
+
+        // Display the command that will be executed
+        QString workingDir = directory.isEmpty() ? QDir::homePath() : directory;
+        output->append("Working Directory: " + workingDir);
+        output->append("Executing command:");
+        output->append(finalCmd);
+        output->append("----------------------------------------");
+
+        QProcess *terminalProcess = new QProcess(terminal);
+        connect(terminalProcess, &QProcess::readyReadStandardOutput, [=]() {
+            QString data = QString::fromLocal8Bit(terminalProcess->readAllStandardOutput());
+            output->append(data);
+            output->moveCursor(QTextCursor::End);
+        });
+        connect(terminalProcess, &QProcess::readyReadStandardError, [=]() {
+            QString data = QString::fromLocal8Bit(terminalProcess->readAllStandardError());
+            output->append(data);
+            output->moveCursor(QTextCursor::End);
+        });
+        connect(terminalProcess, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished),
+                [=](int exitCode, QProcess::ExitStatus exitStatus) {
+            output->append("----------------------------------------");
+            output->append(QString("Process finished with exit code: %1").arg(exitCode));
+            if (exitStatus == QProcess::CrashExit) {
+                output->append("Process crashed!");
+            }
+            output->moveCursor(QTextCursor::End);
+        });
+
+        terminalProcess->setWorkingDirectory(workingDir);
+        
+        // Execute the command
+        terminalProcess->start("/bin/bash", QStringList() << "-c" << finalCmd);
+        
+        if (!terminalProcess->waitForStarted(3000)) {
+            output->append("Error: Failed to start the process!");
+        }
+
+        terminal->resize(800, 500);
+        terminal->show();
+    });
+    
+    fileDialog->exec();
+    fileDialog->deleteLater();
+}
+
+void MainWindow::setupKeyboardShortcuts() {
+    SettingsManager* settings = SettingsManager::instance();
+    
+    // Create shortcuts
+    newCommandShortcut = new QShortcut(this);
+    saveCommandShortcut = new QShortcut(this);
+    openCommandsShortcut = new QShortcut(this);
+    startExecuteShortcut = new QShortcut(QKeySequence("F5"), this); // F5 for Start+Execute
+    
+    // Connect shortcuts to actions
+    connect(newCommandShortcut, &QShortcut::activated, this, &MainWindow::onNewClicked);
+    connect(saveCommandShortcut, &QShortcut::activated, this, &MainWindow::onSaveClicked);
+    connect(openCommandsShortcut, &QShortcut::activated, this, &MainWindow::onAllCommandsClicked);
+    connect(startExecuteShortcut, &QShortcut::activated, this, &MainWindow::onStartExecuteShortcut);
+    
+    // Set initial shortcuts from settings
+    updateKeyboardShortcuts();
+    
+    // Update shortcuts when settings change
+    connect(settings, &SettingsManager::shortcutsChanged, this, &MainWindow::updateKeyboardShortcuts);
+}
+
+void MainWindow::updateKeyboardShortcuts() {
+    SettingsManager* settings = SettingsManager::instance();
+    
+    newCommandShortcut->setKey(QKeySequence(settings->getNewCommandShortcut()));
+    saveCommandShortcut->setKey(QKeySequence(settings->getSaveCommandShortcut()));
+    openCommandsShortcut->setKey(QKeySequence(settings->getOpenCommandsShortcut()));
+    startExecuteShortcut->setKey(QKeySequence(settings->getStartExecuteShortcut()));
+    
+    // Set tooltips to show shortcuts
+    newButton->setToolTip(QString("New Command (%1)").arg(settings->getNewCommandShortcut()));
+    saveButton->setToolTip(QString("Save Command (%1)").arg(settings->getSaveCommandShortcut()));
+    allCommandsButton->setToolTip(QString("All Commands (%1)").arg(settings->getOpenCommandsShortcut()));
+    
+    QString startExecuteShortcut = settings->getStartExecuteShortcut();
+    startButton->setToolTip(QString("Start (%1)").arg(startExecuteShortcut));
+    executeButton->setToolTip(QString("Execute (%1)").arg(startExecuteShortcut));
+}
+
+void MainWindow::onStartExecuteShortcut() {
+    if (startButton->isVisible()) {
+        // If Start button is visible, click it first
+        onStartClicked();
+        
+        // Then automatically execute after a short delay
+        QTimer::singleShot(100, [this]() {
+            if (executeButton->isVisible()) {
+                onExecuteClicked();
+            }
+        });
+    } else if (executeButton->isVisible()) {
+        // If only Execute button is visible, just execute
+        onExecuteClicked();
+    }
+}
