@@ -35,6 +35,7 @@ private:
     void setupGeneralTab();
     void setupAppearanceTab();
     void setupKeyboardTab();
+    void setupHelpTab();
     void loadSettings();
     void applySettings();
     void applyTheme(SettingsManager::Theme theme);
@@ -60,6 +61,9 @@ private:
     QKeySequenceEdit* m_saveCommandEdit;
     QKeySequenceEdit* m_openCommandsEdit;
     
+    // Help tab
+    QWidget* m_helpTab;
+
     // Buttons
     QPushButton* m_okButton;
     QPushButton* m_cancelButton;

@@ -17,6 +17,7 @@ SettingsDialog::SettingsDialog(QWidget* parent) : QDialog(parent) {
     setupGeneralTab();
     setupAppearanceTab();
     setupKeyboardTab();
+    setupHelpTab();
     
     mainLayout->addWidget(m_tabWidget);
     
@@ -122,6 +123,43 @@ void SettingsDialog::setupKeyboardTab() {
     layout->addRow("Start + Execute:", m_startExecuteEdit);
     
     m_tabWidget->addTab(m_keyboardTab, "Keyboard Shortcuts");
+}
+
+void SettingsDialog::setupHelpTab() {
+    m_helpTab = new QWidget();
+    QFormLayout* layout = new QFormLayout(m_helpTab);
+
+    // Application Info
+    layout->addRow("Application Name:", new QLabel("CMD Manager"));
+    layout->addRow("Version:", new QLabel("v1.0.0"));
+
+    // About
+    QLabel* aboutLabel = new QLabel("CMD Manager is a free tool for managing and executing custom commands.");
+    aboutLabel->setWordWrap(true);
+    layout->addRow("About:", aboutLabel);
+
+    // Help Link
+    QLabel* helpLink = new QLabel("<a href='https://github.com/KietDo0602/cmd-manager/'>View Help Documentation</a>");
+    helpLink->setTextFormat(Qt::RichText);
+    helpLink->setTextInteractionFlags(Qt::TextBrowserInteraction);
+    helpLink->setOpenExternalLinks(true);
+    layout->addRow("Help:", helpLink);
+
+    // Website
+    QLabel* websiteLink = new QLabel("<a href='https://github.com/KietDo0602/cmd-manager/'>Visit Official Website</a>");
+    websiteLink->setTextFormat(Qt::RichText);
+    websiteLink->setTextInteractionFlags(Qt::TextBrowserInteraction);
+    websiteLink->setOpenExternalLinks(true);
+    layout->addRow("Website:", websiteLink);
+
+    // Contact
+    QLabel* contactLabel = new QLabel("<a href='mailto:kietdo0602@gmail.com'>kietdo0602@gmail.com</a>");
+    contactLabel->setTextFormat(Qt::RichText);
+    contactLabel->setTextInteractionFlags(Qt::TextBrowserInteraction);
+    contactLabel->setOpenExternalLinks(true);
+    layout->addRow("Contact:", contactLabel);
+
+    m_tabWidget->addTab(m_helpTab, "Help");
 }
 
 void SettingsDialog::loadSettings() {

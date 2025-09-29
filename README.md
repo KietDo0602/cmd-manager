@@ -125,8 +125,8 @@ Make sure to list any OS-specific problems inside the branch name or description
 - [x] Add shortcuts and let user configure them inside settings
 - [x] Add Settings
 - [x] Add color theme
-- [ ] Add Help and About section
-- [ ] Add Logo and more icons for the Program
+- [x] Add Help and About section
+- [x] Add Logo and more icons for the Program
 - [ ] Release 1.0 version
 
 
