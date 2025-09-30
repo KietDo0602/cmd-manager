@@ -1,6 +1,13 @@
 #ifndef SETTINGSDIALOG_H
 #define SETTINGSDIALOG_H
 
+#include "settingsmanager.h"
+
+#include <QFileDialog>
+#include <QListView>
+#include <QMessageBox>
+#include <QTextBrowser>
+#include <QDesktopServices>
 #include <QDialog>
 #include <QTabWidget>
 #include <QVBoxLayout>
@@ -14,7 +21,8 @@
 #include <QPushButton>
 #include <QLabel>
 #include <QKeySequenceEdit>
-#include "settingsmanager.h"
+#include <QDebug>
+#include <QAbstractItemView>
 
 class SettingsDialog : public QDialog {
     Q_OBJECT
