@@ -788,3 +788,19 @@ QString SettingsManager::getThemeStyleSheet(Theme theme, int fontSize, const QSt
 QString SettingsManager::getCurrentThemeStyleSheet() const {
     return getThemeStyleSheet(getTheme(), getFontSize(), getFontFamily());
 }
+
+bool SettingsManager::getShowCommandLabel() const {
+    return m_settings->value("terminal/showCommandLabel", true).toBool();
+}
+
+void SettingsManager::setShowCommandLabel(bool show) {
+    m_settings->setValue("terminal/showCommandLabel", show);
+}
+
+bool SettingsManager::getInstantRunFromMenu() const {
+    return m_settings->value("terminal/instantRunFromMenu", false).toBool();
+}
+
+void SettingsManager::setInstantRunFromMenu(bool instant) {
+    m_settings->setValue("terminal/instantRunFromMenu", instant);
+}

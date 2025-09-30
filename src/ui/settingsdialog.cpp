@@ -17,6 +17,7 @@ SettingsDialog::SettingsDialog(QWidget* parent) : QDialog(parent) {
     setupGeneralTab();
     setupAppearanceTab();
     setupKeyboardTab();
+    setupTerminalTab();
     setupHelpTab();
     
     mainLayout->addWidget(m_tabWidget);
@@ -188,6 +189,10 @@ void SettingsDialog::loadSettings() {
     m_openCommandsEdit->setKeySequence(QKeySequence(m_settings->getOpenCommandsShortcut()));
     m_startExecuteEdit->setKeySequence(QKeySequence(m_settings->getStartExecuteShortcut())); 
 
+    // Terminal
+    m_showCommandLabelCheck->setChecked(m_settings->getShowCommandLabel());
+    m_instantRunCheck->setChecked(m_settings->getInstantRunFromMenu());
+
     // Update preview
     onThemeChanged();
     onFontSizeChanged();
@@ -241,6 +246,10 @@ void SettingsDialog::applySettings() {
     m_settings->setSaveCommandShortcut(m_saveCommandEdit->keySequence().toString());
     m_settings->setOpenCommandsShortcut(m_openCommandsEdit->keySequence().toString());
     m_settings->setStartExecuteShortcut(m_startExecuteEdit->keySequence().toString());
+
+    // Terminal
+    m_settings->setShowCommandLabel(m_showCommandLabelCheck->isChecked());
+    m_settings->setInstantRunFromMenu(m_instantRunCheck->isChecked());
     
     // Apply theme to all windows immediately
     m_settings->applyThemeToAllWindows();
@@ -282,14 +291,46 @@ void SettingsDialog::onRestoreDefaultsClicked() {
         font.setWeight(QFont::Light);        // thin/elegant
         font.setPointSize(14);               // default modern size
         m_fontFamilyCombo->setCurrentFont(font);
+        m_fontSizeSpin->setValue(14);
 
         m_newCommandEdit->setKeySequence(QKeySequence("Ctrl+N"));
         m_saveCommandEdit->setKeySequence(QKeySequence("Ctrl+S"));
         m_openCommandsEdit->setKeySequence(QKeySequence("Ctrl+O"));
         m_startExecuteEdit->setKeySequence(QKeySequence("F5")); 
+        m_showCommandLabelCheck->setChecked(true);
+        m_instantRunCheck->setChecked(false);
 
         onThemeChanged();
         onFontSizeChanged();
         onFontFamilyChanged();
     }
+}
+
+void SettingsDialog::setupTerminalTab() {
+    m_terminalTab = new QWidget();
+    QVBoxLayout* layout = new QVBoxLayout(m_terminalTab);
+    
+    QGroupBox* displayGroup = new QGroupBox("Display Options");
+    QVBoxLayout* displayLayout = new QVBoxLayout(displayGroup);
+    
+    m_showCommandLabelCheck = new QCheckBox("Show command information before execution");
+    m_showCommandLabelCheck->setToolTip("When enabled, displays working directory, command, and separator before execution");
+    displayLayout->addWidget(m_showCommandLabelCheck);
+    
+    displayLayout->addStretch();
+    layout->addWidget(displayGroup);
+    
+    QGroupBox* executionGroup = new QGroupBox("Execution Options");
+    QVBoxLayout* executionLayout = new QVBoxLayout(executionGroup);
+    
+    m_instantRunCheck = new QCheckBox("Instant run from 'All Commands' menu");
+    m_instantRunCheck->setToolTip("When enabled, displays working directory, command, and separator before command gets executed inside the terminal. Only the output of the command and some necessary information are shown.");
+    executionLayout->addWidget(m_instantRunCheck);
+    
+    executionLayout->addStretch();
+    layout->addWidget(executionGroup);
+    
+    layout->addStretch();
+    
+    m_tabWidget->addTab(m_terminalTab, "Terminal");
 }

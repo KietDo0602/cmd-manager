@@ -23,6 +23,7 @@
 #include <QKeySequenceEdit>
 #include <QDebug>
 #include <QAbstractItemView>
+#include <QGroupBox>
 
 class SettingsDialog : public QDialog {
     Q_OBJECT
@@ -44,6 +45,7 @@ private:
     void setupAppearanceTab();
     void setupKeyboardTab();
     void setupHelpTab();
+    void setupTerminalTab();
     void loadSettings();
     void applySettings();
     void applyTheme(SettingsManager::Theme theme);
@@ -68,6 +70,11 @@ private:
     QKeySequenceEdit* m_newCommandEdit;
     QKeySequenceEdit* m_saveCommandEdit;
     QKeySequenceEdit* m_openCommandsEdit;
+
+    // Terminal Tab
+    QWidget* m_terminalTab;
+    QCheckBox* m_showCommandLabelCheck;
+    QCheckBox* m_instantRunCheck;
     
     // Help tab
     QWidget* m_helpTab;

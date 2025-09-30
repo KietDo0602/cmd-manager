@@ -83,11 +83,13 @@ cmake --build .
 
 ### 🧪 Run the Program
 
-After building, the executable will be located inside the `build` directory:
+After building, the executable `CMD-Manager` will be located inside the `build/src` directory.
 
 ```bash
-./CMD-Manager
+./src/CMD-Manager
 ```
+Run it to start the program!
+
 
 ## 🧹 Clean Build
 

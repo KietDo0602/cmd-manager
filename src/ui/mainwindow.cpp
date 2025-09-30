@@ -1,19 +1,5 @@
 #include "mainwindow.h"
 
-#include <QScreen>
-#include <QGroupBox>
-#include <QApplication>
-#include <QHBoxLayout>
-#include <QTextStream>
-#include <QVBoxLayout>
-#include <QRegularExpression>
-#include <QDebug>
-#include <QFile>
-#include <QJsonDocument>
-#include <QJsonObject>
-#include <QJsonArray>
-#include <QCloseEvent>
-
 // Initialize static member
 QSet<QString> MainWindow::openedCommands;
 
@@ -628,7 +614,7 @@ void MainWindow::onExecuteClicked() {
     output->setReadOnly(true);
     QFont font("Consolas");
     font.setStyleHint(QFont::Monospace);
-    font.setPointSize(11);
+    font.setPointSize(14);
     output->setFont(font);
 
     output->setStyleSheet(
@@ -645,11 +631,13 @@ void MainWindow::onExecuteClicked() {
     layout->addWidget(closeBtn);
     connect(closeBtn, &QPushButton::clicked, terminal, &QDialog::close);
 
-    // Display the command that will be executed
-    output->append("Working Directory: " + (currentDir.isEmpty() ? QDir::homePath() : currentDir));
-    output->append("Executing command:");
-    output->append(finalCmd);
-    output->append("----------------------------------------");
+    QString workingDir = currentDir.isEmpty() ? QDir::homePath() : currentDir;
+    if (SettingsManager::instance()->getShowCommandLabel()) {
+        output->append("Working Directory: " + workingDir);
+        output->append("Executing command:");
+        output->append(finalCmd);
+        output->append("======================= START COMMAND =======================");
+    }
 
     QProcess *terminalProcess = new QProcess(terminal); // Use local process
     connect(terminalProcess, &QProcess::readyReadStandardOutput, [=]() {
@@ -664,7 +652,9 @@ void MainWindow::onExecuteClicked() {
     });
     connect(terminalProcess, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished),
             [=](int exitCode, QProcess::ExitStatus exitStatus) {
-        output->append("----------------------------------------");
+        if (SettingsManager::instance()->getShowCommandLabel()) {
+            output->append("======================= END =======================");
+        }
         output->append(QString("Process finished with exit code: %1").arg(exitCode));
         if (exitStatus == QProcess::CrashExit) {
             output->append("Process crashed!");
@@ -672,7 +662,6 @@ void MainWindow::onExecuteClicked() {
         output->moveCursor(QTextCursor::End);
     });
 
-    QString workingDir = currentDir.isEmpty() ? QDir::homePath() : currentDir;
     terminalProcess->setWorkingDirectory(workingDir);
     
     // Execute the command
@@ -947,6 +936,97 @@ void CommandsMenuDialog::executeCommand(const QJsonObject &commandData) {
         QMessageBox::warning(this, "Empty Command", "The selected command is empty.");
         return;
     }
+
+        // Check if instant run is enabled
+    if (SettingsManager::instance()->getInstantRunFromMenu()) {
+        // Instant run: use saved file paths directly
+        QString finalCmd = command;
+        
+        // Replace placeholders with saved file paths
+        for (int i = 0; i < filesArray.size(); ++i) {
+            QJsonObject fileData = filesArray[i].toObject();
+            QString placeholder = fileData["placeholder"].toString();
+            QString savedFile = fileData["selectedFile"].toString();
+            
+            if (!savedFile.isEmpty()) {
+                QString filePath = savedFile;
+                filePath.replace("'", "'\"'\"'");
+                QString quotedPath = "'" + filePath + "'";
+                finalCmd.replace(placeholder, quotedPath);
+            }
+        }
+        
+        // Create terminal execution window immediately
+        QDialog *terminal = new QDialog(nullptr);
+        terminal->setAttribute(Qt::WA_DeleteOnClose);
+        terminal->setWindowTitle("CMD Manager - Command Execution");
+        
+        QVBoxLayout *termLayout = new QVBoxLayout(terminal);
+
+        QTextEdit *output = new QTextEdit();
+        output->setReadOnly(true);
+        QFont font("Consolas");
+        font.setStyleHint(QFont::Monospace);
+        font.setPointSize(14);
+        output->setFont(font);
+        termLayout->addWidget(output);
+
+        output->setStyleSheet(
+            "QTextEdit { "
+            "background-color: black; "
+            "color: white; "
+            "border: none; "
+            "}"
+        );
+
+        QPushButton *closeBtn = new QPushButton("Close");
+        termLayout->addWidget(closeBtn);
+        connect(closeBtn, &QPushButton::clicked, terminal, &QDialog::close);
+
+        // Check if command label should be shown
+        QString workingDir = directory.isEmpty() ? QDir::homePath() : directory;
+        if (SettingsManager::instance()->getShowCommandLabel()) {
+            output->append("Working Directory: " + workingDir);
+            output->append("Executing command:");
+            output->append(finalCmd);
+            output->append("======================= START COMMAND =======================");
+        }
+
+        QProcess *terminalProcess = new QProcess(terminal);
+        connect(terminalProcess, &QProcess::readyReadStandardOutput, [=]() {
+            QString data = QString::fromLocal8Bit(terminalProcess->readAllStandardOutput());
+            output->append(data);
+            output->moveCursor(QTextCursor::End);
+        });
+        connect(terminalProcess, &QProcess::readyReadStandardError, [=]() {
+            QString data = QString::fromLocal8Bit(terminalProcess->readAllStandardError());
+            output->append(data);
+            output->moveCursor(QTextCursor::End);
+        });
+        connect(terminalProcess, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished),
+                [=](int exitCode, QProcess::ExitStatus exitStatus) {
+            if (SettingsManager::instance()->getShowCommandLabel()) {
+                output->append("======================= END =======================");
+            }
+            output->append(QString("Process finished with exit code: %1").arg(exitCode));
+            if (exitStatus == QProcess::CrashExit) {
+                output->append("Process crashed!");
+            }
+            output->moveCursor(QTextCursor::End);
+        });
+
+        terminalProcess->setWorkingDirectory(workingDir);
+        terminalProcess->start("/bin/bash", QStringList() << "-c" << finalCmd);
+        
+        if (!terminalProcess->waitForStarted(3000)) {
+            output->append("Error: Failed to start the process!");
+        }
+
+        terminal->resize(800, 500);
+        terminal->show();
+        
+        return; // Exit early, skip file configuration dialog
+    }
     
     // Create a dialog to show file mappings and allow user to select files
     QDialog *fileDialog = new QDialog(this);
@@ -1041,7 +1121,7 @@ void CommandsMenuDialog::executeCommand(const QJsonObject &commandData) {
 
         QFont font("Consolas");
         font.setStyleHint(QFont::Monospace);
-        font.setPointSize(11);
+        font.setPointSize(14);
         output->setFont(font);
 
         output->setStyleSheet(
@@ -1060,10 +1140,12 @@ void CommandsMenuDialog::executeCommand(const QJsonObject &commandData) {
 
         // Display the command that will be executed
         QString workingDir = directory.isEmpty() ? QDir::homePath() : directory;
-        output->append("Working Directory: " + workingDir);
-        output->append("Executing command:");
-        output->append(finalCmd);
-        output->append("----------------------------------------");
+        if (SettingsManager::instance()->getShowCommandLabel()) {
+            output->append("Working Directory: " + workingDir);
+            output->append("Executing command:");
+            output->append(finalCmd);
+            output->append("======================= START COMMAND =======================");
+        }
 
         QProcess *terminalProcess = new QProcess(terminal);
         connect(terminalProcess, &QProcess::readyReadStandardOutput, [=]() {
@@ -1078,7 +1160,9 @@ void CommandsMenuDialog::executeCommand(const QJsonObject &commandData) {
         });
         connect(terminalProcess, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished),
                 [=](int exitCode, QProcess::ExitStatus exitStatus) {
-            output->append("----------------------------------------");
+            if (SettingsManager::instance()->getShowCommandLabel()) {
+                output->append("======================= END =======================");
+            }
             output->append(QString("Process finished with exit code: %1").arg(exitCode));
             if (exitStatus == QProcess::CrashExit) {
                 output->append("Process crashed!");

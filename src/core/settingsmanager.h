@@ -55,6 +55,12 @@ public:
 
     static QString getThemeStyleSheet(Theme theme, int fontSize, const QString& fontFamily);
 
+    bool getShowCommandLabel() const;
+    void setShowCommandLabel(bool show);
+
+    bool getInstantRunFromMenu() const;
+    void setInstantRunFromMenu(bool instant);
+
 signals:
     void themeChanged(Theme theme);
     void fontChanged();

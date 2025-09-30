@@ -6,6 +6,21 @@
 #include <QComboBox>
 #include <QPushButton>
 #include <QFileInfo>
+#include <QScreen>
+#include <QGroupBox>
+#include <QApplication>
+#include <QHBoxLayout>
+#include <QTextStream>
+#include <QVBoxLayout>
+#include <QRegularExpression>
+#include <QDebug>
+#include <QFile>
+#include <QIcon>
+#include <QSize>
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QJsonArray>
+#include <QCloseEvent>
 
 class FileRowWidget : public QWidget
 {
