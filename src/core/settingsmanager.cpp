@@ -1,4 +1,5 @@
 #include "settingsmanager.h"
+
 #include <QStandardPaths>
 #include <QDir>
 

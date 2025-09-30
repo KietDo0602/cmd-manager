@@ -1,66 +1,29 @@
 cmake_minimum_required(VERSION 3.5)
 project(CMD-Manager)
 
-# Enable Qt's automatic MOC (Meta-Object Compiler)
 set(CMAKE_AUTOMOC ON)
 
-# Find Qt5 Widgets
 find_package(Qt5 COMPONENTS Widgets REQUIRED)
 
-# Define the executable
-add_executable(CMD-Manager
-    main.cpp
-    mainwindow.cpp
-    mainwindow.h
-    filerowwidget.cpp
-    filerowwidget.h
-    settingsmanager.cpp
-    settingsmanager.h
-    settingsdialog.cpp
-    settingsdialog.h
-)
+# Add subdirectories
+add_subdirectory(src)
 
-# Compile Qt resource file
-qt5_add_resources(RESOURCE_FILES resources.qrc)
-target_sources(CMD-Manager PRIVATE ${RESOURCE_FILES})
+# Install documentation
+install(FILES README.md DESTINATION share/doc/CMD-Manager)
 
-# Link Qt5 libraries
-target_link_libraries(CMD-Manager Qt5::Widgets)
-
-# Install the executable
-install(TARGETS CMD-Manager
-    RUNTIME DESTINATION bin        # Windows & Linux
-    BUNDLE DESTINATION .           # macOS .app bundles
-    COMPONENT Runtime
-)
-
-# Optional: Install headers (if needed for development)
-install(FILES
-    mainwindow.h
-    terminaldialog.h
-    DESTINATION include
-)
-
-# Optional: Install documentation
-install(FILES README.md
-    DESTINATION share/doc/CMD-Manager
-)
-
-# Include system libraries for packaging
+# Packaging
 include(InstallRequiredSystemLibraries)
 
-# CPack configuration for cross-platform installers
 set(CPACK_PACKAGE_NAME "CMD-Manager")
 set(CPACK_PACKAGE_VERSION "1.0.0")
 set(CPACK_PACKAGE_CONTACT "kietdo0602@gmail.com")
 
-# Platform-specific packaging
 if(WIN32)
-    set(CPACK_GENERATOR "NSIS")       # Windows installer
+    set(CPACK_GENERATOR "NSIS")
 elseif(APPLE)
-    set(CPACK_GENERATOR "DragNDrop")  # macOS .dmg
+    set(CPACK_GENERATOR "DragNDrop")
 elseif(UNIX)
-    set(CPACK_GENERATOR "DEB")        # Linux .deb package
+    set(CPACK_GENERATOR "DEB")
 endif()
 
 include(CPack)

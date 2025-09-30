@@ -29,7 +29,7 @@ MainWindow::MainWindow(QWidget *parent)
     QHBoxLayout *topButtonsLayout = new QHBoxLayout();
     
     newButton = new QPushButton("New");
-    allCommandsButton = new QPushButton("All Commands");
+    allCommandsButton = new QPushButton("Commands Menu");
     saveButton = new QPushButton("Save");
     settingsButton = new QPushButton("Settings");
     
@@ -79,7 +79,6 @@ MainWindow::MainWindow(QWidget *parent)
     connect(executeButton, &QPushButton::clicked, this, &MainWindow::onExecuteClicked);
 
     clearButton = new QPushButton("Clear Commands");
-    clearButton->setFixedWidth(140);
     clearButton->hide();
 
     // Layout for Execute and Clear side by side
