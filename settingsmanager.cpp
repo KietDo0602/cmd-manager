@@ -137,7 +137,6 @@ QString SettingsManager::getThemeStyleSheet(Theme theme, int fontSize, const QSt
                 QWidget {
                     background-color: #FFFDF9;   /* warm off-white */
                     color: #333333;              /* soft dark gray text */
-                    font-size: 14px;
                 }
 
                 /* Buttons */
@@ -363,7 +362,6 @@ QString SettingsManager::getThemeStyleSheet(Theme theme, int fontSize, const QSt
                 QWidget {
                     background-color: #0B0B0B;   /* ultra dark background */
                     color: #F5F5F5;              /* bright text */
-                    font-size: 14px;
                 }
 
                 /* Buttons */
@@ -576,7 +574,6 @@ QString SettingsManager::getThemeStyleSheet(Theme theme, int fontSize, const QSt
                 QWidget {
                     background-color: #2F3136;
                     color: #DCDDDE;
-                    font-size: 14px;
                 }
 
                 /* Buttons */
