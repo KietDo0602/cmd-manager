@@ -4,5 +4,7 @@
     <file>images/app_icon.ico</file>
     <file>images/arrow_down.svg</file>
     <file>images/arrow_up.svg</file>
+    <file>images/arrow_down_light.svg</file>
+    <file>images/arrow_up_light.svg</file>
   </qresource>
 </RCC>

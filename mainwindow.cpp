@@ -627,7 +627,19 @@ void MainWindow::onExecuteClicked() {
 
     QTextEdit *output = new QTextEdit();
     output->setReadOnly(true);
-    output->setFont(QFont("Courier", 10));
+    QFont font("Consolas");
+    font.setStyleHint(QFont::Monospace);
+    font.setPointSize(11);
+    output->setFont(font);
+
+    output->setStyleSheet(
+        "QTextEdit { "
+        "background-color: black; "
+        "color: white; "
+        "border: none; "
+        "}"
+    );
+
     layout->addWidget(output);
 
     QPushButton *closeBtn = new QPushButton("Close");

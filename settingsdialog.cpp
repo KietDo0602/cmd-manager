@@ -79,6 +79,13 @@ void SettingsDialog::setupAppearanceTab() {
     m_themeCombo->addItem("Dark", SettingsManager::Dark);
     m_themeCombo->addItem("Light", SettingsManager::Light);
     m_themeCombo->addItem("High Contrast", SettingsManager::Contrast);
+    m_themeCombo->setSizeAdjustPolicy(QComboBox::AdjustToContents);
+    QListView *view = qobject_cast<QListView *>(m_themeCombo->view());
+    if (view) {
+        view->setSpacing(0);
+        view->setStyleSheet("QListView { margin: 0px; padding: 0px; }");
+    }
+
     layout->addRow("Theme:", m_themeCombo);
     
     // Font size
@@ -139,25 +146,28 @@ void SettingsDialog::setupHelpTab() {
     layout->addRow("About:", aboutLabel);
 
     // Help Link
-    QLabel* helpLink = new QLabel("<a href='https://github.com/KietDo0602/cmd-manager/'>View Help Documentation</a>");
-    helpLink->setTextFormat(Qt::RichText);
-    helpLink->setTextInteractionFlags(Qt::TextBrowserInteraction);
-    helpLink->setOpenExternalLinks(true);
-    layout->addRow("Help:", helpLink);
+    QPushButton* helpButton = new QPushButton("Help Link");
+    helpButton->setCursor(Qt::PointingHandCursor);
+    connect(helpButton, &QPushButton::clicked, []() {
+        QDesktopServices::openUrl(QUrl("https://github.com/KietDo0602/cmd-manager/issues"));
+    });
+    layout->addRow("Help:", helpButton);
 
     // Website
-    QLabel* websiteLink = new QLabel("<a href='https://github.com/KietDo0602/cmd-manager/'>Visit Official Website</a>");
-    websiteLink->setTextFormat(Qt::RichText);
-    websiteLink->setTextInteractionFlags(Qt::TextBrowserInteraction);
-    websiteLink->setOpenExternalLinks(true);
-    layout->addRow("Website:", websiteLink);
+    QPushButton* websiteButton = new QPushButton("My Website");
+    websiteButton->setCursor(Qt::PointingHandCursor);
+    connect(websiteButton, &QPushButton::clicked, []() {
+        QDesktopServices::openUrl(QUrl("https://kietdo.io/"));
+    });
+    layout->addRow("Website:", websiteButton);
 
     // Contact
-    QLabel* contactLabel = new QLabel("<a href='mailto:kietdo0602@gmail.com'>kietdo0602@gmail.com</a>");
-    contactLabel->setTextFormat(Qt::RichText);
-    contactLabel->setTextInteractionFlags(Qt::TextBrowserInteraction);
-    contactLabel->setOpenExternalLinks(true);
-    layout->addRow("Contact:", contactLabel);
+    QPushButton* contactButton = new QPushButton("Contact Me!");
+    contactButton->setCursor(Qt::PointingHandCursor);
+    connect(contactButton, &QPushButton::clicked, []() {
+        QDesktopServices::openUrl(QUrl("mailto:kietdo0602@gmail.com"));
+    });
+    layout->addRow("Contact:", contactButton);
 
     m_tabWidget->addTab(m_helpTab, "Help");
 }
