@@ -612,18 +612,24 @@ void MainWindow::onExecuteClicked() {
 
     QTextEdit *output = new QTextEdit();
     output->setReadOnly(true);
-    QFont font("Consolas");
-    font.setStyleHint(QFont::Monospace);
-    font.setPointSize(14);
-    output->setFont(font);
 
-    output->setStyleSheet(
+    // Apply terminal settings
+    SettingsManager* settings = SettingsManager::instance();
+    QPair<QColor, QColor> colors = SettingsManager::getTerminalColors(settings->getTerminalColorScheme());
+    
+    QString terminalStyle = QString(
         "QTextEdit { "
-        "background-color: black; "
-        "color: white; "
+        "background-color: %1; "
+        "color: %2; "
+        "font-family: '%3'; "
+        "font-size: %4pt; "
         "border: none; "
         "}"
-    );
+    ).arg(colors.first.name())
+     .arg(colors.second.name())
+     .arg(settings->getTerminalFontFamily())
+     .arg(settings->getTerminalFontSize());
+    output->setStyleSheet(terminalStyle);
 
     layout->addWidget(output);
 
@@ -965,19 +971,26 @@ void CommandsMenuDialog::executeCommand(const QJsonObject &commandData) {
 
         QTextEdit *output = new QTextEdit();
         output->setReadOnly(true);
-        QFont font("Consolas");
-        font.setStyleHint(QFont::Monospace);
-        font.setPointSize(14);
-        output->setFont(font);
-        termLayout->addWidget(output);
 
-        output->setStyleSheet(
+        // Apply terminal settings
+        SettingsManager* settings = SettingsManager::instance();
+        QPair<QColor, QColor> colors = SettingsManager::getTerminalColors(settings->getTerminalColorScheme());
+        
+        QString terminalStyle = QString(
             "QTextEdit { "
-            "background-color: black; "
-            "color: white; "
+            "background-color: %1; "
+            "color: %2; "
+            "font-family: '%3'; "
+            "font-size: %4pt; "
             "border: none; "
             "}"
-        );
+        ).arg(colors.first.name())
+         .arg(colors.second.name())
+         .arg(settings->getTerminalFontFamily())
+         .arg(settings->getTerminalFontSize());
+        output->setStyleSheet(terminalStyle);
+
+        termLayout->addWidget(output);
 
         QPushButton *closeBtn = new QPushButton("Close");
         termLayout->addWidget(closeBtn);
@@ -1119,18 +1132,23 @@ void CommandsMenuDialog::executeCommand(const QJsonObject &commandData) {
         QTextEdit *output = new QTextEdit();
         output->setReadOnly(true);
 
-        QFont font("Consolas");
-        font.setStyleHint(QFont::Monospace);
-        font.setPointSize(14);
-        output->setFont(font);
-
-        output->setStyleSheet(
+        // Apply terminal settings
+        SettingsManager* settings = SettingsManager::instance();
+        QPair<QColor, QColor> colors = SettingsManager::getTerminalColors(settings->getTerminalColorScheme());
+        
+        QString terminalStyle = QString(
             "QTextEdit { "
-            "background-color: black; "
-            "color: white; "
+            "background-color: %1; "
+            "color: %2; "
+            "font-family: '%3'; "
+            "font-size: %4pt; "
             "border: none; "
             "}"
-        );
+        ).arg(colors.first.name())
+         .arg(colors.second.name())
+         .arg(settings->getTerminalFontFamily())
+         .arg(settings->getTerminalFontSize());
+        output->setStyleSheet(terminalStyle);
 
         termLayout->addWidget(output);
 

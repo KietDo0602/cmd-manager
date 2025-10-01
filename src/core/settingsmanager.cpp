@@ -804,3 +804,55 @@ bool SettingsManager::getInstantRunFromMenu() const {
 void SettingsManager::setInstantRunFromMenu(bool instant) {
     m_settings->setValue("terminal/instantRunFromMenu", instant);
 }
+
+SettingsManager::TerminalColorScheme SettingsManager::getTerminalColorScheme() const {
+    return static_cast<TerminalColorScheme>(m_settings->value("terminal/colorScheme", NeonGreen).toInt());
+}
+
+void SettingsManager::setTerminalColorScheme(TerminalColorScheme scheme) {
+    m_settings->setValue("terminal/colorScheme", static_cast<int>(scheme));
+}
+
+QString SettingsManager::getTerminalFontFamily() const {
+    return m_settings->value("terminal/fontFamily", "Courier").toString();
+}
+
+void SettingsManager::setTerminalFontFamily(const QString& family) {
+    m_settings->setValue("terminal/fontFamily", family);
+}
+
+int SettingsManager::getTerminalFontSize() const {
+    return m_settings->value("terminal/fontSize", 10).toInt();
+}
+
+void SettingsManager::setTerminalFontSize(int size) {
+    m_settings->setValue("terminal/fontSize", size);
+}
+
+QPair<QColor, QColor> SettingsManager::getTerminalColors(TerminalColorScheme scheme) {
+    // Returns QPair<background, foreground>
+    switch (scheme) {
+        case NeonGreen:
+            return qMakePair(QColor("#000000"), QColor("#00FF00")); // Black bg, neon green text
+        case Classic:
+            return qMakePair(QColor("#000000"), QColor("#FFFFFF")); // Black bg, white text
+        case LightMode:
+            return qMakePair(QColor("#FFFFFF"), QColor("#000000")); // White bg, black text
+        case Matrix:
+            return qMakePair(QColor("#001a1a"), QColor("#00FFFF")); // Dark blue bg, cyan text
+        case Dracula:
+            return qMakePair(QColor("#282a36"), QColor("#f8f8f2")); // Dark purple bg, light text
+        case Monokai:
+            return qMakePair(QColor("#272822"), QColor("#F8F8F2")); // Dark bg, cream text
+        case Nord:
+            return qMakePair(QColor("#2E3440"), QColor("#D8DEE9")); // Cool dark blue, light blue-gray
+        case SolarizedDark:
+            return qMakePair(QColor("#002b36"), QColor("#839496")); // Deep teal, muted cyan-gray
+        case GruvboxDark:
+            return qMakePair(QColor("#282828"), QColor("#ebdbb2")); // Warm dark brown, cream
+        case OneDark:
+            return qMakePair(QColor("#282c34"), QColor("#abb2bf")); // Dark gray, light gray
+        default:
+            return qMakePair(QColor("#000000"), QColor("#00FF00"));
+    }
+}

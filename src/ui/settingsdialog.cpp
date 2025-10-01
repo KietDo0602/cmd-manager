@@ -41,8 +41,9 @@ SettingsDialog::SettingsDialog(QWidget* parent) : QDialog(parent) {
     connect(m_cancelButton, &QPushButton::clicked, this, &SettingsDialog::onCancelClicked);
     connect(m_applyButton, &QPushButton::clicked, this, &SettingsDialog::onApplyClicked);
     connect(m_restoreDefaultsButton, &QPushButton::clicked, this, &SettingsDialog::onRestoreDefaultsClicked);
-    
+
     loadSettings();
+    applySettings();
 }
 
 void SettingsDialog::setupGeneralTab() {
@@ -102,7 +103,8 @@ void SettingsDialog::setupAppearanceTab() {
     // Preview
     m_previewLabel = new QLabel("Preview: The quick brown fox jumps over the lazy dog");
     m_previewLabel->setFrameStyle(QFrame::Box);
-    m_previewLabel->setMinimumHeight(50);
+    m_previewLabel->setFixedHeight(70);
+    m_previewLabel->setWordWrap(true);
     m_previewLabel->setAlignment(Qt::AlignCenter);
     layout->addRow("Preview:", m_previewLabel);
     
@@ -193,6 +195,13 @@ void SettingsDialog::loadSettings() {
     m_showCommandLabelCheck->setChecked(m_settings->getShowCommandLabel());
     m_instantRunCheck->setChecked(m_settings->getInstantRunFromMenu());
 
+    int terminalSchemeIndex = m_terminalColorSchemeCombo->findData(m_settings->getTerminalColorScheme());
+    if (terminalSchemeIndex >= 0) {
+        m_terminalColorSchemeCombo->setCurrentIndex(terminalSchemeIndex);
+    }
+    m_terminalFontCombo->setCurrentFont(QFont(m_settings->getTerminalFontFamily()));
+    m_terminalFontSizeSpin->setValue(m_settings->getTerminalFontSize());
+
     // Update preview
     onThemeChanged();
     onFontSizeChanged();
@@ -217,8 +226,14 @@ void SettingsDialog::onFontSizeChanged() {
     font.setPointSize(m_fontSizeSpin->value());
     m_previewLabel->setFont(font);
     
-    // Also update the preview theme
-    onThemeChanged();
+    // Update the dialog's own appearance with current preview settings
+    SettingsManager::Theme theme = static_cast<SettingsManager::Theme>(m_themeCombo->currentData().toInt());
+    QString previewStyleSheet = SettingsManager::getThemeStyleSheet(
+        theme,
+        m_fontSizeSpin->value(),
+        m_fontFamilyCombo->currentFont().family()
+    );
+    setStyleSheet(previewStyleSheet);
 }
 
 void SettingsDialog::onFontFamilyChanged() {
@@ -226,8 +241,14 @@ void SettingsDialog::onFontFamilyChanged() {
     font.setPointSize(m_fontSizeSpin->value());
     m_previewLabel->setFont(font);
     
-    // Also update the preview theme
-    onThemeChanged();
+    // Update the dialog's own appearance with current preview settings
+    SettingsManager::Theme theme = static_cast<SettingsManager::Theme>(m_themeCombo->currentData().toInt());
+    QString previewStyleSheet = SettingsManager::getThemeStyleSheet(
+        theme,
+        m_fontSizeSpin->value(),
+        m_fontFamilyCombo->currentFont().family()
+    );
+    setStyleSheet(previewStyleSheet);
 }
 
 void SettingsDialog::applySettings() {
@@ -250,6 +271,12 @@ void SettingsDialog::applySettings() {
     // Terminal
     m_settings->setShowCommandLabel(m_showCommandLabelCheck->isChecked());
     m_settings->setInstantRunFromMenu(m_instantRunCheck->isChecked());
+
+    SettingsManager::TerminalColorScheme terminalScheme = 
+    static_cast<SettingsManager::TerminalColorScheme>(m_terminalColorSchemeCombo->currentData().toInt());
+    m_settings->setTerminalColorScheme(terminalScheme);
+    m_settings->setTerminalFontFamily(m_terminalFontCombo->currentFont().family());
+    m_settings->setTerminalFontSize(m_terminalFontSizeSpin->value());
     
     // Apply theme to all windows immediately
     m_settings->applyThemeToAllWindows();
@@ -298,11 +325,16 @@ void SettingsDialog::onRestoreDefaultsClicked() {
         m_openCommandsEdit->setKeySequence(QKeySequence("Ctrl+O"));
         m_startExecuteEdit->setKeySequence(QKeySequence("F5")); 
         m_showCommandLabelCheck->setChecked(true);
-        m_instantRunCheck->setChecked(false);
+        m_instantRunCheck->setChecked(true);
+
+        m_terminalColorSchemeCombo->setCurrentIndex(0); // Neon Green
+        m_terminalFontCombo->setCurrentFont(QFont("Courier"));
+        m_terminalFontSizeSpin->setValue(10);
 
         onThemeChanged();
         onFontSizeChanged();
         onFontFamilyChanged();
+        onTerminalPreviewUpdate();
     }
 }
 
@@ -329,8 +361,82 @@ void SettingsDialog::setupTerminalTab() {
     
     executionLayout->addStretch();
     layout->addWidget(executionGroup);
+
+    QGroupBox* appearanceGroup = new QGroupBox("Terminal Appearance");
+    QFormLayout* appearanceLayout = new QFormLayout(appearanceGroup);
+    
+    // Color scheme dropdown
+    m_terminalColorSchemeCombo = new QComboBox();
+    m_terminalColorSchemeCombo->addItem("Neon Green (Default)", SettingsManager::NeonGreen);
+    m_terminalColorSchemeCombo->addItem("Classic (White on Black)", SettingsManager::Classic);
+    m_terminalColorSchemeCombo->addItem("Light Mode (Black on White)", SettingsManager::LightMode);
+    m_terminalColorSchemeCombo->addItem("Matrix (Cyan on Dark Blue)", SettingsManager::Matrix);
+    m_terminalColorSchemeCombo->addItem("Dracula", SettingsManager::Dracula);
+    m_terminalColorSchemeCombo->addItem("Monokai", SettingsManager::Monokai);
+    m_terminalColorSchemeCombo->addItem("Nord", SettingsManager::Nord);
+    m_terminalColorSchemeCombo->addItem("Solarized Dark", SettingsManager::SolarizedDark);
+    m_terminalColorSchemeCombo->addItem("Gruvbox Dark", SettingsManager::GruvboxDark);
+    m_terminalColorSchemeCombo->addItem("One Dark", SettingsManager::OneDark);
+    appearanceLayout->addRow("Color Scheme:", m_terminalColorSchemeCombo);
+
+    // Font family
+    m_terminalFontCombo = new QFontComboBox();
+    m_terminalFontCombo->setFontFilters(QFontComboBox::MonospacedFonts);
+    appearanceLayout->addRow("Font Family:", m_terminalFontCombo);
+    
+    // Font size
+    m_terminalFontSizeSpin = new QSpinBox();
+    m_terminalFontSizeSpin->setRange(8, 24);
+    m_terminalFontSizeSpin->setSuffix(" pt");
+    appearanceLayout->addRow("Font Size:", m_terminalFontSizeSpin);
+    
+    layout->addWidget(appearanceGroup);
+    
+    // Preview
+    QGroupBox* previewGroup = new QGroupBox("Preview");
+    QVBoxLayout* previewLayout = new QVBoxLayout(previewGroup);
+    
+    m_terminalPreview = new QTextEdit();
+    m_terminalPreview->setReadOnly(true);
+    m_terminalPreview->setMaximumHeight(100);
+    m_terminalPreview->setText("$ ls -la\ntotal 48\ndrwxr-xr-x  2 user user 4096 Oct  1 12:34 .\ndrwxr-xr-x 18 user user 4096 Oct  1 12:30 ..\n-rw-r--r--  1 user user  220 Oct  1 12:30 .bash_logout");
+    previewLayout->addWidget(m_terminalPreview);
+    
+    layout->addWidget(previewGroup);
     
     layout->addStretch();
+
+    // Connect signals for live preview
+    connect(m_terminalColorSchemeCombo, QOverload<int>::of(&QComboBox::currentIndexChanged), 
+            this, &SettingsDialog::onTerminalPreviewUpdate);
+    connect(m_terminalFontCombo, &QFontComboBox::currentFontChanged, 
+            this, &SettingsDialog::onTerminalPreviewUpdate);
+    connect(m_terminalFontSizeSpin, QOverload<int>::of(&QSpinBox::valueChanged), 
+            this, &SettingsDialog::onTerminalPreviewUpdate);
     
     m_tabWidget->addTab(m_terminalTab, "Terminal");
+}
+
+void SettingsDialog::onTerminalPreviewUpdate() {
+    SettingsManager::TerminalColorScheme scheme = 
+        static_cast<SettingsManager::TerminalColorScheme>(m_terminalColorSchemeCombo->currentData().toInt());
+    
+    QPair<QColor, QColor> colors = SettingsManager::getTerminalColors(scheme);
+    QColor bgColor = colors.first;
+    QColor fgColor = colors.second;
+    
+    QString previewStyle = QString(
+        "QTextEdit { "
+        "background-color: %1; "
+        "color: %2; "
+        "font-family: '%3'; "
+        "font-size: %4pt; "
+        "border: 1px solid #555; "
+        "}"
+    ).arg(bgColor.name())
+     .arg(fgColor.name())
+     .arg(m_terminalFontCombo->currentFont().family())
+     .arg(m_terminalFontSizeSpin->value());
+    
+    m_terminalPreview->setStyleSheet(previewStyle);
 }

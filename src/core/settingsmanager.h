@@ -13,9 +13,22 @@ class SettingsManager : public QObject {
 
 public:
     enum Theme {
-        Dark,
+        Dark,           // Default: Dark Theme
         Light,
         Contrast
+    };
+
+    enum TerminalColorScheme {
+        NeonGreen,      // Default: green on black
+        Classic,        // White on black
+        LightMode,      // Black on white
+        Matrix,         // Dark blue background, cyan text
+        Dracula,        // Purple/pink theme
+        Monokai,        // Dark with orange/yellow
+        Nord,           // Cool blues and grays
+        SolarizedDark,  // Muted yellows on dark
+        GruvboxDark,    // Warm retro colors
+        OneDark         // Atom-inspired dark theme
     };
 
     static SettingsManager* instance();
@@ -60,6 +73,17 @@ public:
 
     bool getInstantRunFromMenu() const;
     void setInstantRunFromMenu(bool instant);
+
+    TerminalColorScheme getTerminalColorScheme() const;
+    void setTerminalColorScheme(TerminalColorScheme scheme);
+    
+    QString getTerminalFontFamily() const;
+    void setTerminalFontFamily(const QString& family);
+    
+    int getTerminalFontSize() const;
+    void setTerminalFontSize(int size);
+    
+    static QPair<QColor, QColor> getTerminalColors(TerminalColorScheme scheme);
 
 signals:
     void themeChanged(Theme theme);

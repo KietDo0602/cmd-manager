@@ -46,6 +46,7 @@ private:
     void setupKeyboardTab();
     void setupHelpTab();
     void setupTerminalTab();
+    void onTerminalPreviewUpdate();
     void loadSettings();
     void applySettings();
     void applyTheme(SettingsManager::Theme theme);
@@ -75,6 +76,10 @@ private:
     QWidget* m_terminalTab;
     QCheckBox* m_showCommandLabelCheck;
     QCheckBox* m_instantRunCheck;
+    QComboBox* m_terminalColorSchemeCombo;
+    QFontComboBox* m_terminalFontCombo;
+    QSpinBox* m_terminalFontSizeSpin;
+    QTextEdit* m_terminalPreview;
     
     // Help tab
     QWidget* m_helpTab;
