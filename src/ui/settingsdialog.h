@@ -76,6 +76,8 @@ private:
     QWidget* m_terminalTab;
     QCheckBox* m_showCommandLabelCheck;
     QCheckBox* m_instantRunCheck;
+    QCheckBox* m_autoCloseTerminalCheck;
+    QCheckBox* m_minimizeToTrayCheck;
     QComboBox* m_terminalColorSchemeCombo;
     QFontComboBox* m_terminalFontCombo;
     QSpinBox* m_terminalFontSizeSpin;

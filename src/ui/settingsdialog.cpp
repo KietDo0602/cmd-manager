@@ -43,7 +43,6 @@ SettingsDialog::SettingsDialog(QWidget* parent) : QDialog(parent) {
     connect(m_restoreDefaultsButton, &QPushButton::clicked, this, &SettingsDialog::onRestoreDefaultsClicked);
 
     loadSettings();
-    applySettings();
 }
 
 void SettingsDialog::setupGeneralTab() {
@@ -68,6 +67,11 @@ void SettingsDialog::setupGeneralTab() {
     // Auto-save
     m_autoSaveCheck = new QCheckBox("Automatically save changes");
     layout->addRow("Auto Save:", m_autoSaveCheck);
+
+    // Minimize to tray
+    m_minimizeToTrayCheck = new QCheckBox("Minimize to system tray when all windows are closed");
+    m_minimizeToTrayCheck->setToolTip("When enabled, closing all windows will minimize the app to tray instead of exiting");
+    layout->addRow("System Tray:", m_minimizeToTrayCheck);
     
     m_tabWidget->addTab(m_generalTab, "General");
 }
@@ -179,6 +183,7 @@ void SettingsDialog::loadSettings() {
     // General
     m_defaultDirEdit->setText(m_settings->getDefaultDirectory());
     m_autoSaveCheck->setChecked(m_settings->getAutoSave());
+    m_minimizeToTrayCheck->setChecked(m_settings->getMinimizeToTray());
     
     // Appearance
     m_themeCombo->setCurrentIndex(static_cast<int>(m_settings->getTheme()));
@@ -194,6 +199,7 @@ void SettingsDialog::loadSettings() {
     // Terminal
     m_showCommandLabelCheck->setChecked(m_settings->getShowCommandLabel());
     m_instantRunCheck->setChecked(m_settings->getInstantRunFromMenu());
+    m_autoCloseTerminalCheck->setChecked(m_settings->getAutoCloseTerminal());
 
     int terminalSchemeIndex = m_terminalColorSchemeCombo->findData(m_settings->getTerminalColorScheme());
     if (terminalSchemeIndex >= 0) {
@@ -206,6 +212,7 @@ void SettingsDialog::loadSettings() {
     onThemeChanged();
     onFontSizeChanged();
     onFontFamilyChanged();
+    m_settings->applyThemeToAllWindows();
 }
 
 void SettingsDialog::onThemeChanged() {
@@ -255,6 +262,7 @@ void SettingsDialog::applySettings() {
     // General
     m_settings->setDefaultDirectory(m_defaultDirEdit->text());
     m_settings->setAutoSave(m_autoSaveCheck->isChecked());
+    m_settings->setMinimizeToTray(m_minimizeToTrayCheck->isChecked());
     
     // Appearance
     SettingsManager::Theme theme = static_cast<SettingsManager::Theme>(m_themeCombo->currentData().toInt());
@@ -271,6 +279,7 @@ void SettingsDialog::applySettings() {
     // Terminal
     m_settings->setShowCommandLabel(m_showCommandLabelCheck->isChecked());
     m_settings->setInstantRunFromMenu(m_instantRunCheck->isChecked());
+    m_settings->setAutoCloseTerminal(m_autoCloseTerminalCheck->isChecked());
 
     SettingsManager::TerminalColorScheme terminalScheme = 
     static_cast<SettingsManager::TerminalColorScheme>(m_terminalColorSchemeCombo->currentData().toInt());
@@ -305,6 +314,8 @@ void SettingsDialog::onRestoreDefaultsClicked() {
         // Restore defaults
         m_defaultDirEdit->setText(QDir::homePath());
         m_autoSaveCheck->setChecked(false);
+        m_minimizeToTrayCheck->setChecked(false);
+
         m_themeCombo->setCurrentIndex(0); // Dark theme
 
         QFont font;
@@ -326,6 +337,7 @@ void SettingsDialog::onRestoreDefaultsClicked() {
         m_startExecuteEdit->setKeySequence(QKeySequence("F5")); 
         m_showCommandLabelCheck->setChecked(true);
         m_instantRunCheck->setChecked(true);
+        m_autoCloseTerminalCheck->setChecked(false);
 
         m_terminalColorSchemeCombo->setCurrentIndex(0); // Neon Green
         m_terminalFontCombo->setCurrentFont(QFont("Courier"));
@@ -354,6 +366,10 @@ void SettingsDialog::setupTerminalTab() {
     
     QGroupBox* executionGroup = new QGroupBox("Execution Options");
     QVBoxLayout* executionLayout = new QVBoxLayout(executionGroup);
+
+    m_autoCloseTerminalCheck = new QCheckBox("Automatically close terminal when command finishes");
+    m_autoCloseTerminalCheck->setToolTip("When enabled, terminal window closes automatically after command execution completes");
+    executionLayout->addWidget(m_autoCloseTerminalCheck);
     
     m_instantRunCheck = new QCheckBox("Instant run from 'All Commands' menu");
     m_instantRunCheck->setToolTip("When enabled, displays working directory, command, and separator before command gets executed inside the terminal. Only the output of the command and some necessary information are shown.");

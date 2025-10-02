@@ -20,19 +20,27 @@ SettingsManager::SettingsManager(QObject* parent) : QObject(parent) {
 
 // General settings
 QString SettingsManager::getDefaultDirectory() const {
-    return m_settings->value("general/defaultDirectory", QDir::homePath()).toString();
+    return m_settings->value("%General/defaultDirectory", QDir::homePath()).toString();
 }
 
 void SettingsManager::setDefaultDirectory(const QString& dir) {
-    m_settings->setValue("general/defaultDirectory", dir);
+    m_settings->setValue("%General/defaultDirectory", dir);
 }
 
 bool SettingsManager::getAutoSave() const {
-    return m_settings->value("general/autoSave", false).toBool();
+    return m_settings->value("%General/autoSave", false).toBool();
 }
 
 void SettingsManager::setAutoSave(bool enabled) {
-    m_settings->setValue("general/autoSave", enabled);
+    m_settings->setValue("%General/autoSave", enabled);
+}
+
+bool SettingsManager::getMinimizeToTray() const {
+    return m_settings->value("%General/minimizeToTray", false).toBool();
+}
+
+void SettingsManager::setMinimizeToTray(bool minimize) {
+    m_settings->setValue("%General/minimizeToTray", minimize);
 }
 
 // Appearance settings
@@ -795,6 +803,14 @@ bool SettingsManager::getShowCommandLabel() const {
 
 void SettingsManager::setShowCommandLabel(bool show) {
     m_settings->setValue("terminal/showCommandLabel", show);
+}
+
+bool SettingsManager::getAutoCloseTerminal() const {
+    return m_settings->value("terminal/autoClose", false).toBool();
+}
+
+void SettingsManager::setAutoCloseTerminal(bool autoClose) {
+    m_settings->setValue("terminal/autoClose", autoClose);
 }
 
 bool SettingsManager::getInstantRunFromMenu() const {

@@ -8,6 +8,9 @@ MainWindow::MainWindow(QWidget *parent)
 
     setWindowTitle("CMD Manager");
 
+    // Setup system tray
+    setupSystemTray();
+
     QWidget *central = new QWidget(this);
     mainLayout = new QVBoxLayout(central);
 
@@ -96,31 +99,75 @@ MainWindow::~MainWindow() {
 }
 
 void MainWindow::closeEvent(QCloseEvent *event) {
+    // Check if minimize to tray is enabled
+    if (SettingsManager::instance()->getMinimizeToTray()) {
+        // Check if there are other MainWindow instances open
+        int mainWindowCount = 0;
+        QWidgetList topLevelWidgets = QApplication::topLevelWidgets();
+        for (QWidget* widget : topLevelWidgets) {
+            if (qobject_cast<MainWindow*>(widget) && widget->isVisible()) {
+                mainWindowCount++;
+            }
+        }
+        
+        // If this is the last MainWindow, minimize to tray instead of closing
+        if (mainWindowCount == 1) {
+            if (hasUnsavedChanges && !currentCommandName.isEmpty()) {
+                int result = showUnsavedChangesDialog();
+                
+                switch (result) {
+                    case QMessageBox::Save:
+                        onSaveClicked();
+                        break;
+                    case QMessageBox::Cancel:
+                        event->ignore();
+                        return;
+                    case QMessageBox::Discard:
+                        break;
+                }
+            }
+            
+            // Hide window and show tray icon
+            hide();
+            trayIcon->show();
+            trayIcon->showMessage("CMD Manager", 
+                                 "Application minimized to tray. Right-click to quit.",
+                                 QSystemTrayIcon::Information,
+                                 2000);
+            
+            // Remove from opened commands
+            if (!currentCommandName.isEmpty()) {
+                openedCommands.remove(currentCommandName);
+            }
+            
+            event->ignore();
+            return;
+        }
+    }
+    
+    // Normal close behavior
     if (hasUnsavedChanges && !currentCommandName.isEmpty()) {
         int result = showUnsavedChangesDialog();
         
         switch (result) {
-            case QMessageBox::Save: // Save and Close
+            case QMessageBox::Save:
                 onSaveClicked();
-                // Remove from opened commands after saving
                 if (!currentCommandName.isEmpty()) {
                     openedCommands.remove(currentCommandName);
                 }
                 event->accept();
                 break;
-            case QMessageBox::Discard: // Don't Save
-                // Remove from opened commands
+            case QMessageBox::Discard:
                 if (!currentCommandName.isEmpty()) {
                     openedCommands.remove(currentCommandName);
                 }
                 event->accept();
                 break;
-            case QMessageBox::Cancel: // Cancel
+            case QMessageBox::Cancel:
                 event->ignore();
                 return;
         }
     } else {
-        // Remove from opened commands
         if (!currentCommandName.isEmpty()) {
             openedCommands.remove(currentCommandName);
         }
@@ -128,6 +175,41 @@ void MainWindow::closeEvent(QCloseEvent *event) {
     }
     
     QMainWindow::closeEvent(event);
+}
+
+void MainWindow::setupSystemTray() {
+    // Create tray icon
+    trayIcon = new QSystemTrayIcon(this);
+    trayIcon->setIcon(QIcon(":/images/app_icon.png"));
+    trayIcon->setToolTip("CMD Manager");
+    
+    // Create tray menu
+    trayMenu = new QMenu(this);
+    
+    QAction *showAction = new QAction("Show", this);
+    connect(showAction, &QAction::triggered, [this]() {
+        show();
+        raise();
+        activateWindow();
+    });
+    
+    QAction *quitAction = new QAction("Quit", this);
+    connect(quitAction, &QAction::triggered, qApp, &QApplication::quit);
+    
+    trayMenu->addAction(showAction);
+    trayMenu->addSeparator();
+    trayMenu->addAction(quitAction);
+    
+    trayIcon->setContextMenu(trayMenu);
+    
+    // Double-click to show
+    connect(trayIcon, &QSystemTrayIcon::activated, [this](QSystemTrayIcon::ActivationReason reason) {
+        if (reason == QSystemTrayIcon::DoubleClick) {
+            show();
+            raise();
+            activateWindow();
+        }
+    });
 }
 
 int MainWindow::showUnsavedChangesDialog() {
@@ -659,13 +741,18 @@ void MainWindow::onExecuteClicked() {
     connect(terminalProcess, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished),
             [=](int exitCode, QProcess::ExitStatus exitStatus) {
         if (SettingsManager::instance()->getShowCommandLabel()) {
-            output->append("======================= END =======================");
+            output->append("======================== END COMMAND ========================");
         }
         output->append(QString("Process finished with exit code: %1").arg(exitCode));
         if (exitStatus == QProcess::CrashExit) {
             output->append("Process crashed!");
         }
         output->moveCursor(QTextCursor::End);
+
+        // Auto-close if enabled
+        if (SettingsManager::instance()->getAutoCloseTerminal()) {
+            QTimer::singleShot(1000, terminal, &QDialog::close); // Close after 1 second
+        }
     });
 
     terminalProcess->setWorkingDirectory(workingDir);
@@ -1019,13 +1106,18 @@ void CommandsMenuDialog::executeCommand(const QJsonObject &commandData) {
         connect(terminalProcess, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished),
                 [=](int exitCode, QProcess::ExitStatus exitStatus) {
             if (SettingsManager::instance()->getShowCommandLabel()) {
-                output->append("======================= END =======================");
+                output->append("======================== END COMMAND ========================");
             }
             output->append(QString("Process finished with exit code: %1").arg(exitCode));
             if (exitStatus == QProcess::CrashExit) {
                 output->append("Process crashed!");
             }
             output->moveCursor(QTextCursor::End);
+
+            // Auto-close if enabled
+            if (SettingsManager::instance()->getAutoCloseTerminal()) {
+                QTimer::singleShot(1000, terminal, &QDialog::close); // Close after 1 second
+            }
         });
 
         terminalProcess->setWorkingDirectory(workingDir);
@@ -1179,13 +1271,18 @@ void CommandsMenuDialog::executeCommand(const QJsonObject &commandData) {
         connect(terminalProcess, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished),
                 [=](int exitCode, QProcess::ExitStatus exitStatus) {
             if (SettingsManager::instance()->getShowCommandLabel()) {
-                output->append("======================= END =======================");
+                output->append("======================== END COMMAND ========================");
             }
             output->append(QString("Process finished with exit code: %1").arg(exitCode));
             if (exitStatus == QProcess::CrashExit) {
                 output->append("Process crashed!");
             }
             output->moveCursor(QTextCursor::End);
+
+            // Auto-close if enabled
+            if (SettingsManager::instance()->getAutoCloseTerminal()) {
+                QTimer::singleShot(1000, terminal, &QDialog::close); // Close after 1 second
+            }
         });
 
         terminalProcess->setWorkingDirectory(workingDir);

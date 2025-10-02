@@ -6,6 +6,7 @@
 #include "settingsmanager.h"
 
 #include <QMainWindow>
+#include <QSystemTrayIcon>
 #include <QShortcut>
 #include <QTimer>
 #include <QKeySequence>
@@ -82,6 +83,10 @@ class MainWindow : public QMainWindow
         void closeEvent(QCloseEvent *event) override;
 
     private:
+        QSystemTrayIcon *trayIcon;
+        QMenu *trayMenu;
+        void setupSystemTray();
+
         // UI Components
         QVBoxLayout *mainLayout;
         QMenu *fileMenu;

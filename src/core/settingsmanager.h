@@ -71,8 +71,14 @@ public:
     bool getShowCommandLabel() const;
     void setShowCommandLabel(bool show);
 
+    bool getMinimizeToTray() const;
+    void setMinimizeToTray(bool minimize);
+
     bool getInstantRunFromMenu() const;
     void setInstantRunFromMenu(bool instant);
+
+    bool getAutoCloseTerminal() const;
+    void setAutoCloseTerminal(bool autoClose);
 
     TerminalColorScheme getTerminalColorScheme() const;
     void setTerminalColorScheme(TerminalColorScheme scheme);
