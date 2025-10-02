@@ -129,11 +129,13 @@ void MainWindow::closeEvent(QCloseEvent *event) {
             
             // Hide window and show tray icon
             hide();
-            trayIcon->show();
-            trayIcon->showMessage("CMD Manager", 
-                                 "Application minimized to tray. Right-click to quit.",
-                                 QSystemTrayIcon::Information,
-                                 2000);
+            if (!trayIcon->isVisible()) {
+                trayIcon->show();
+                trayIcon->showMessage("CMD Manager", 
+                                     "Application minimized to tray. Double-click icon to restore.",
+                                     QSystemTrayIcon::Information,
+                                     2000);
+            }
             
             // Remove from opened commands
             if (!currentCommandName.isEmpty()) {
@@ -193,21 +195,40 @@ void MainWindow::setupSystemTray() {
         activateWindow();
     });
     
+    QAction *newWindowAction = new QAction("New Window", this);
+    connect(newWindowAction, &QAction::triggered, []() {
+        MainWindow *newWindow = new MainWindow();
+        newWindow->setAttribute(Qt::WA_DeleteOnClose);
+        newWindow->show();
+    });
+    
     QAction *quitAction = new QAction("Quit", this);
     connect(quitAction, &QAction::triggered, qApp, &QApplication::quit);
     
     trayMenu->addAction(showAction);
+    trayMenu->addAction(newWindowAction);
     trayMenu->addSeparator();
     trayMenu->addAction(quitAction);
     
     trayIcon->setContextMenu(trayMenu);
     
-    // Double-click to show
+    // Handle both single and double-click to restore window
     connect(trayIcon, &QSystemTrayIcon::activated, [this](QSystemTrayIcon::ActivationReason reason) {
-        if (reason == QSystemTrayIcon::DoubleClick) {
-            show();
-            raise();
-            activateWindow();
+        if (reason == QSystemTrayIcon::Trigger || reason == QSystemTrayIcon::DoubleClick) {
+            // If this window is hidden, show it
+            if (isHidden()) {
+                show();
+                raise();
+                activateWindow();
+                trayIcon->hide();
+            } else {
+                // If visible but minimized, restore it
+                if (isMinimized()) {
+                    showNormal();
+                }
+                raise();
+                activateWindow();
+            }
         }
     });
 }
