@@ -821,6 +821,14 @@ void SettingsManager::setInstantRunFromMenu(bool instant) {
     m_settings->setValue("terminal/instantRunFromMenu", instant);
 }
 
+bool SettingsManager::getPlayCompletionSound() const {
+    return m_settings->value("terminal/playCompletionSound", false).toBool();
+}
+
+void SettingsManager::setPlayCompletionSound(bool play) {
+    m_settings->setValue("terminal/playCompletionSound", play);
+}
+
 SettingsManager::TerminalColorScheme SettingsManager::getTerminalColorScheme() const {
     return static_cast<TerminalColorScheme>(m_settings->value("terminal/colorScheme", NeonGreen).toInt());
 }

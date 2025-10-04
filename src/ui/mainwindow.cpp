@@ -770,6 +770,13 @@ void MainWindow::onExecuteClicked() {
         }
         output->moveCursor(QTextCursor::End);
 
+        // Play sound if enabled in settings
+        if (SettingsManager::instance()->getPlayCompletionSound()) {
+            QTimer::singleShot(1000, []() {
+                Utils::playNotificationSound();  // Play Notification sound on complete
+            });
+        }
+
         // Auto-close if enabled
         if (SettingsManager::instance()->getAutoCloseTerminal()) {
             QTimer::singleShot(1000, terminal, &QDialog::close); // Close after 1 second
@@ -1135,6 +1142,13 @@ void CommandsMenuDialog::executeCommand(const QJsonObject &commandData) {
             }
             output->moveCursor(QTextCursor::End);
 
+            // Play sound if enabled in settings
+            if (SettingsManager::instance()->getPlayCompletionSound()) {
+                QTimer::singleShot(1000, []() {
+                    Utils::playNotificationSound();  // Play Notification sound on complete
+                });
+            }
+
             // Auto-close if enabled
             if (SettingsManager::instance()->getAutoCloseTerminal()) {
                 QTimer::singleShot(1000, terminal, &QDialog::close); // Close after 1 second
@@ -1300,10 +1314,18 @@ void CommandsMenuDialog::executeCommand(const QJsonObject &commandData) {
             }
             output->moveCursor(QTextCursor::End);
 
+            // Play sound if enabled in settings
+            if (SettingsManager::instance()->getPlayCompletionSound()) {
+                QTimer::singleShot(1000, []() {
+                    Utils::playNotificationSound();  // Play Notification Sound on Complete
+                });
+            }
+
             // Auto-close if enabled
             if (SettingsManager::instance()->getAutoCloseTerminal()) {
                 QTimer::singleShot(1000, terminal, &QDialog::close); // Close after 1 second
             }
+
         });
 
         terminalProcess->setWorkingDirectory(workingDir);
@@ -1379,3 +1401,4 @@ void MainWindow::onStartExecuteShortcut() {
         onExecuteClicked();
     }
 }
+

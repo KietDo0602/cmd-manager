@@ -24,6 +24,8 @@
 #include <QDebug>
 #include <QAbstractItemView>
 #include <QGroupBox>
+#include <QJsonDocument>
+#include <QJsonObject>
 
 class SettingsDialog : public QDialog {
     Q_OBJECT
@@ -39,6 +41,9 @@ private slots:
     void onOkClicked();
     void onCancelClicked();
     void onRestoreDefaultsClicked();
+    void onTerminalPreviewUpdate();
+    void onExportCommands();
+    void onImportCommands();
 
 private:
     void setupGeneralTab();
@@ -46,7 +51,6 @@ private:
     void setupKeyboardTab();
     void setupHelpTab();
     void setupTerminalTab();
-    void onTerminalPreviewUpdate();
     void loadSettings();
     void applySettings();
     void applyTheme(SettingsManager::Theme theme);
@@ -58,6 +62,7 @@ private:
     QLineEdit* m_defaultDirEdit;
     QPushButton* m_browseDirButton;
     QCheckBox* m_autoSaveCheck;
+    QCheckBox* m_minimizeToTrayCheck;
     
     // Appearance tab
     QWidget* m_appearanceTab;
@@ -77,7 +82,7 @@ private:
     QCheckBox* m_showCommandLabelCheck;
     QCheckBox* m_instantRunCheck;
     QCheckBox* m_autoCloseTerminalCheck;
-    QCheckBox* m_minimizeToTrayCheck;
+    QCheckBox* m_playCompletionSoundCheck;
     QComboBox* m_terminalColorSchemeCombo;
     QFontComboBox* m_terminalFontCombo;
     QSpinBox* m_terminalFontSizeSpin;

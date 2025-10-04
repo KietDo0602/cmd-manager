@@ -4,6 +4,7 @@
 #include "filerowwidget.h"
 #include "settingsdialog.h"
 #include "settingsmanager.h"
+#include "utils.h"
 
 #include <QMainWindow>
 #include <QSystemTrayIcon>
@@ -63,6 +64,7 @@ class MainWindow : public QMainWindow
             storeOriginalState();
             updateWindowTitle();
         }
+        void playNotificationSound();
 
     private slots:
         void onStartClicked();

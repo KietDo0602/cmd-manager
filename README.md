@@ -122,13 +122,15 @@ Make sure to list any OS-specific problems inside the branch name or description
 
 ## 📝 To Do
 
-- [x] Fix Save behavior when opening an existing settings.
-- [x] Can't interact with some window when terminal opened for another terminal.
-- [x] Add shortcuts and let user configure them inside settings
-- [x] Add Settings
-- [x] Add color theme
-- [x] Add Help and About section
-- [x] Add Logo and more icons for the Program
+- [x] Sound / Notification On Command Complete
+- [x] Export All Commands to JSON file
+- [x] Load Commands from JSON file
+- [ ] Language Support
+- [ ] Search / Filter for Commands List
+- [ ] Sort by File name / Recently Opened
+- [ ] Star command - will go to the top
+- [ ] Drag and Drop Support
+- [ ] Command Validation and Preview
 - [ ] Release 1.0 version
 
 

@@ -68,6 +68,7 @@ public:
 
     static QString getThemeStyleSheet(Theme theme, int fontSize, const QString& fontFamily);
 
+    // Terminal Settings
     bool getShowCommandLabel() const;
     void setShowCommandLabel(bool show);
 
@@ -79,6 +80,9 @@ public:
 
     bool getAutoCloseTerminal() const;
     void setAutoCloseTerminal(bool autoClose);
+
+    bool getPlayCompletionSound() const;
+    void setPlayCompletionSound(bool play);
 
     TerminalColorScheme getTerminalColorScheme() const;
     void setTerminalColorScheme(TerminalColorScheme scheme);

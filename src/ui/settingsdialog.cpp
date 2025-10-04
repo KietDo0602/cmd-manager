@@ -47,7 +47,9 @@ SettingsDialog::SettingsDialog(QWidget* parent) : QDialog(parent) {
 
 void SettingsDialog::setupGeneralTab() {
     m_generalTab = new QWidget();
-    QFormLayout* layout = new QFormLayout(m_generalTab);
+    QVBoxLayout* mainLayout = new QVBoxLayout(m_generalTab);
+    
+    QFormLayout* layout = new QFormLayout();
     
     // Default directory
     QHBoxLayout* dirLayout = new QHBoxLayout();
@@ -67,11 +69,32 @@ void SettingsDialog::setupGeneralTab() {
     // Auto-save
     m_autoSaveCheck = new QCheckBox("Automatically save changes");
     layout->addRow("Auto Save:", m_autoSaveCheck);
-
+    
     // Minimize to tray
     m_minimizeToTrayCheck = new QCheckBox("Minimize to system tray when all windows are closed");
     m_minimizeToTrayCheck->setToolTip("When enabled, closing all windows will minimize the app to tray instead of exiting");
     layout->addRow("System Tray:", m_minimizeToTrayCheck);
+    
+    mainLayout->addLayout(layout);
+    
+    // Export Commands section
+    QGroupBox* exportGroup = new QGroupBox("Data Management");
+    QVBoxLayout* exportLayout = new QVBoxLayout(exportGroup);
+    
+    QPushButton* exportButton = new QPushButton("Export All Commands");
+    exportButton->setToolTip("Export all saved commands to a JSON file");
+    connect(exportButton, &QPushButton::clicked, this, &SettingsDialog::onExportCommands);
+    
+    QPushButton* importButton = new QPushButton("Import Commands");
+    importButton->setToolTip("Import commands from a JSON file");
+    connect(importButton, &QPushButton::clicked, this, &SettingsDialog::onImportCommands);
+    
+    exportLayout->addWidget(exportButton);
+    exportLayout->addWidget(importButton);
+    exportLayout->addStretch();
+    
+    mainLayout->addWidget(exportGroup);
+    mainLayout->addStretch();
     
     m_tabWidget->addTab(m_generalTab, "General");
 }
@@ -200,6 +223,7 @@ void SettingsDialog::loadSettings() {
     m_showCommandLabelCheck->setChecked(m_settings->getShowCommandLabel());
     m_instantRunCheck->setChecked(m_settings->getInstantRunFromMenu());
     m_autoCloseTerminalCheck->setChecked(m_settings->getAutoCloseTerminal());
+    m_playCompletionSoundCheck->setChecked(m_settings->getPlayCompletionSound());
 
     int terminalSchemeIndex = m_terminalColorSchemeCombo->findData(m_settings->getTerminalColorScheme());
     if (terminalSchemeIndex >= 0) {
@@ -280,6 +304,7 @@ void SettingsDialog::applySettings() {
     m_settings->setShowCommandLabel(m_showCommandLabelCheck->isChecked());
     m_settings->setInstantRunFromMenu(m_instantRunCheck->isChecked());
     m_settings->setAutoCloseTerminal(m_autoCloseTerminalCheck->isChecked());
+    m_settings->setPlayCompletionSound(m_playCompletionSoundCheck->isChecked());
 
     SettingsManager::TerminalColorScheme terminalScheme = 
     static_cast<SettingsManager::TerminalColorScheme>(m_terminalColorSchemeCombo->currentData().toInt());
@@ -370,6 +395,10 @@ void SettingsDialog::setupTerminalTab() {
     m_autoCloseTerminalCheck = new QCheckBox("Automatically close terminal when command finishes");
     m_autoCloseTerminalCheck->setToolTip("When enabled, terminal window closes automatically after command execution completes");
     executionLayout->addWidget(m_autoCloseTerminalCheck);
+
+    m_playCompletionSoundCheck = new QCheckBox("Play sound when command completes");
+    m_playCompletionSoundCheck->setToolTip("When enabled, plays a notification sound when command execution finishes");
+    executionLayout->addWidget(m_playCompletionSoundCheck);
     
     m_instantRunCheck = new QCheckBox("Instant run from 'All Commands' menu");
     m_instantRunCheck->setToolTip("When enabled, displays working directory, command, and separator before command gets executed inside the terminal. Only the output of the command and some necessary information are shown.");
@@ -455,4 +484,120 @@ void SettingsDialog::onTerminalPreviewUpdate() {
      .arg(m_terminalFontSizeSpin->value());
     
     m_terminalPreview->setStyleSheet(previewStyle);
+}
+
+void SettingsDialog::onExportCommands() {
+    QString fileName = QFileDialog::getSaveFileName(this, 
+        "Export Commands", 
+        QDir::homePath() + "/cmd_manager_commands.json",
+        "JSON Files (*.json)");
+    
+    if (fileName.isEmpty()) {
+        return;
+    }
+    
+    // Get the commands file path
+    QString configPath = QStandardPaths::writableLocation(QStandardPaths::ConfigLocation);
+    QString commandsFile = configPath + "/CMDManager/commands.json";
+    
+    // Copy the commands file to the selected location
+    if (QFile::exists(commandsFile)) {
+        if (QFile::exists(fileName)) {
+            QFile::remove(fileName);
+        }
+        
+        if (QFile::copy(commandsFile, fileName)) {
+            QMessageBox::information(this, "Export Successful", 
+                QString("Commands exported successfully to:\n%1").arg(fileName));
+        } else {
+            QMessageBox::warning(this, "Export Failed", 
+                "Failed to export commands. Please check file permissions.");
+        }
+    } else {
+        QMessageBox::warning(this, "No Commands", 
+            "No commands found to export.");
+    }
+}
+
+void SettingsDialog::onImportCommands() {
+    QString fileName = QFileDialog::getOpenFileName(this, 
+        "Import Commands", 
+        QDir::homePath(),
+        "JSON Files (*.json)");
+    
+    if (fileName.isEmpty()) {
+        return;
+    }
+    
+    // Read the import file
+    QFile importFile(fileName);
+    if (!importFile.open(QIODevice::ReadOnly)) {
+        QMessageBox::warning(this, "Import Failed", 
+            "Failed to open file for reading.");
+        return;
+    }
+    
+    QByteArray importData = importFile.readAll();
+    importFile.close();
+    
+    // Validate JSON
+    QJsonDocument importDoc = QJsonDocument::fromJson(importData);
+    if (!importDoc.isObject()) {
+        QMessageBox::warning(this, "Invalid File", 
+            "The selected file is not a valid commands JSON file.");
+        return;
+    }
+    
+    // Ask user how to handle conflicts
+    QMessageBox::StandardButton reply = QMessageBox::question(this, 
+        "Import Commands",
+        "How do you want to handle existing commands?\n\n"
+        "Yes - Merge (keep existing, add new)\n"
+        "No - Replace (overwrite all existing commands)",
+        QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
+    
+    if (reply == QMessageBox::Cancel) {
+        return;
+    }
+    
+    QString configPath = QStandardPaths::writableLocation(QStandardPaths::ConfigLocation);
+    QString commandsFile = configPath + "/CMDManager/commands.json";
+    
+    QJsonObject finalCommands;
+    
+    if (reply == QMessageBox::Yes) {
+        // Merge: Load existing commands first
+        QFile existingFile(commandsFile);
+        if (existingFile.open(QIODevice::ReadOnly)) {
+            QJsonDocument existingDoc = QJsonDocument::fromJson(existingFile.readAll());
+            existingFile.close();
+            if (existingDoc.isObject()) {
+                finalCommands = existingDoc.object();
+            }
+        }
+        
+        // Add/overwrite with imported commands
+        QJsonObject importedCommands = importDoc.object();
+        for (auto it = importedCommands.begin(); it != importedCommands.end(); ++it) {
+            finalCommands[it.key()] = it.value();
+        }
+    } else {
+        // Replace: Use only imported commands
+        finalCommands = importDoc.object();
+    }
+    
+    // Write to commands file
+    QDir().mkpath(QFileInfo(commandsFile).absolutePath());
+    QFile file(commandsFile);
+    if (file.open(QIODevice::WriteOnly)) {
+        QJsonDocument doc(finalCommands);
+        file.write(doc.toJson());
+        file.close();
+        
+        QMessageBox::information(this, "Import Successful", 
+            QString("Successfully imported commands from:\n%1").arg(fileName));
+    } else {
+        QMessageBox::warning(this, "Import Failed", 
+            "Failed to write commands. Please check file permissions.");
+    }
 }
