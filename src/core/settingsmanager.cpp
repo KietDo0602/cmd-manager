@@ -43,6 +43,30 @@ void SettingsManager::setMinimizeToTray(bool minimize) {
     m_settings->setValue("%General/minimizeToTray", minimize);
 }
 
+// Language settings
+SettingsManager::Language SettingsManager::getLanguage() const {
+    return static_cast<Language>(m_settings->value("%General/language", English).toInt());
+}
+
+void SettingsManager::setLanguage(Language lang) {
+    m_settings->setValue("%General/language", static_cast<int>(lang));
+}
+
+QString SettingsManager::getLanguageCode() const {
+    return getLanguageCode(getLanguage());
+}
+
+QString SettingsManager::getLanguageCode(Language lang) {
+    switch (lang) {
+        case French: return "fr";
+        case Spanish: return "es";
+        case Chinese: return "zh";
+        case Russian: return "ru";
+        case Vietnamese: return "vi";
+        default: return "en";
+    }
+}
+
 // Appearance settings
 SettingsManager::Theme SettingsManager::getTheme() const {
     return static_cast<Theme>(m_settings->value("appearance/theme", Dark).toInt());

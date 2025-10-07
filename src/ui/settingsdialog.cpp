@@ -3,7 +3,7 @@
 #include <QMessageBox>
 
 SettingsDialog::SettingsDialog(QWidget* parent) : QDialog(parent) {
-    setWindowTitle("Settings");
+    setWindowTitle(tr("Settings"));
     setModal(true);
     resize(500, 400);
     
@@ -24,10 +24,10 @@ SettingsDialog::SettingsDialog(QWidget* parent) : QDialog(parent) {
     
     // Buttons
     QHBoxLayout* buttonLayout = new QHBoxLayout();
-    m_okButton = new QPushButton("OK");
-    m_cancelButton = new QPushButton("Cancel");
-    m_applyButton = new QPushButton("Apply");
-    m_restoreDefaultsButton = new QPushButton("Restore Defaults");
+    m_okButton = new QPushButton(tr("OK"));
+    m_cancelButton = new QPushButton(tr("Cancel"));
+    m_applyButton = new QPushButton(tr("Apply"));
+    m_restoreDefaultsButton = new QPushButton(tr("Restore Defaults"));
     
     buttonLayout->addWidget(m_restoreDefaultsButton);
     buttonLayout->addStretch();
@@ -51,42 +51,52 @@ void SettingsDialog::setupGeneralTab() {
     
     QFormLayout* layout = new QFormLayout();
     
+    // Language Support
+    m_languageCombo = new QComboBox();
+    m_languageCombo->addItem("English", SettingsManager::English);
+    m_languageCombo->addItem("Français (French)", SettingsManager::French);
+    m_languageCombo->addItem("Español (Spanish)", SettingsManager::Spanish);
+    m_languageCombo->addItem("中文 (Chinese)", SettingsManager::Chinese);
+    m_languageCombo->addItem("Русский (Russian)", SettingsManager::Russian);
+    m_languageCombo->addItem("Tiếng Việt (Vietnamese)", SettingsManager::Vietnamese);
+    layout->addRow(tr("Language:"), m_languageCombo);
+    
     // Default directory
     QHBoxLayout* dirLayout = new QHBoxLayout();
     m_defaultDirEdit = new QLineEdit();
-    m_browseDirButton = new QPushButton("Browse...");
+    m_browseDirButton = new QPushButton(tr("Browse..."));
     dirLayout->addWidget(m_defaultDirEdit);
     dirLayout->addWidget(m_browseDirButton);
-    layout->addRow("Default Directory:", dirLayout);
+    layout->addRow(tr("Default Directory:"), dirLayout);
     
     connect(m_browseDirButton, &QPushButton::clicked, [this]() {
-        QString dir = QFileDialog::getExistingDirectory(this, "Choose Default Directory", m_defaultDirEdit->text());
+        QString dir = QFileDialog::getExistingDirectory(this, tr("Choose Default Directory"), m_defaultDirEdit->text());
         if (!dir.isEmpty()) {
             m_defaultDirEdit->setText(dir);
         }
     });
     
     // Auto-save
-    m_autoSaveCheck = new QCheckBox("Automatically save changes");
-    layout->addRow("Auto Save:", m_autoSaveCheck);
+    m_autoSaveCheck = new QCheckBox(tr("Automatically save changes"));
+    layout->addRow(tr("Auto Save:"), m_autoSaveCheck);
     
     // Minimize to tray
-    m_minimizeToTrayCheck = new QCheckBox("Minimize to system tray when all windows are closed");
-    m_minimizeToTrayCheck->setToolTip("When enabled, closing all windows will minimize the app to tray instead of exiting");
-    layout->addRow("System Tray:", m_minimizeToTrayCheck);
+    m_minimizeToTrayCheck = new QCheckBox(tr("Minimize to system tray when all windows are closed"));
+    m_minimizeToTrayCheck->setToolTip(tr("When enabled, closing all windows will minimize the app to tray instead of exiting"));
+    layout->addRow(tr("System Tray:"), m_minimizeToTrayCheck);
     
     mainLayout->addLayout(layout);
     
     // Export Commands section
-    QGroupBox* exportGroup = new QGroupBox("Data Management");
+    QGroupBox* exportGroup = new QGroupBox(tr("Data Management"));
     QVBoxLayout* exportLayout = new QVBoxLayout(exportGroup);
     
-    QPushButton* exportButton = new QPushButton("Export All Commands");
-    exportButton->setToolTip("Export all saved commands to a JSON file");
+    QPushButton* exportButton = new QPushButton(tr("Export All Commands"));
+    exportButton->setToolTip(tr("Export all saved commands to a JSON file"));
     connect(exportButton, &QPushButton::clicked, this, &SettingsDialog::onExportCommands);
     
-    QPushButton* importButton = new QPushButton("Import Commands");
-    importButton->setToolTip("Import commands from a JSON file");
+    QPushButton* importButton = new QPushButton(tr("Import Commands"));
+    importButton->setToolTip(tr("Import commands from a JSON file"));
     connect(importButton, &QPushButton::clicked, this, &SettingsDialog::onImportCommands);
     
     exportLayout->addWidget(exportButton);
@@ -96,7 +106,7 @@ void SettingsDialog::setupGeneralTab() {
     mainLayout->addWidget(exportGroup);
     mainLayout->addStretch();
     
-    m_tabWidget->addTab(m_generalTab, "General");
+    m_tabWidget->addTab(m_generalTab, tr("General"));
 }
 
 void SettingsDialog::setupAppearanceTab() {
@@ -105,9 +115,9 @@ void SettingsDialog::setupAppearanceTab() {
     
     // Theme
     m_themeCombo = new QComboBox();
-    m_themeCombo->addItem("Dark", SettingsManager::Dark);
-    m_themeCombo->addItem("Light", SettingsManager::Light);
-    m_themeCombo->addItem("High Contrast", SettingsManager::Contrast);
+    m_themeCombo->addItem(tr("Dark"), SettingsManager::Dark);
+    m_themeCombo->addItem(tr("Light"), SettingsManager::Light);
+    m_themeCombo->addItem(tr("High Contrast"), SettingsManager::Contrast);
     m_themeCombo->setSizeAdjustPolicy(QComboBox::AdjustToContents);
     QListView *view = qobject_cast<QListView *>(m_themeCombo->view());
     if (view) {
@@ -121,25 +131,25 @@ void SettingsDialog::setupAppearanceTab() {
     m_fontSizeSpin = new QSpinBox();
     m_fontSizeSpin->setRange(8, 40);
     m_fontSizeSpin->setSuffix(" pt");
-    layout->addRow("Font Size:", m_fontSizeSpin);
+    layout->addRow(tr("Font Size:"), m_fontSizeSpin);
     
     // Font family
     m_fontFamilyCombo = new QFontComboBox();
-    layout->addRow("Font Family:", m_fontFamilyCombo);
+    layout->addRow(tr("Font Family:"), m_fontFamilyCombo);
     
     // Preview
-    m_previewLabel = new QLabel("Preview: The quick brown fox jumps over the lazy dog");
+    m_previewLabel = new QLabel(tr("Preview: The quick brown fox jumps over the lazy dog"));
     m_previewLabel->setFrameStyle(QFrame::Box);
     m_previewLabel->setFixedHeight(70);
     m_previewLabel->setWordWrap(true);
     m_previewLabel->setAlignment(Qt::AlignCenter);
-    layout->addRow("Preview:", m_previewLabel);
+    layout->addRow(tr("Preview:"), m_previewLabel);
     
     connect(m_themeCombo, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &SettingsDialog::onThemeChanged);
     connect(m_fontSizeSpin, QOverload<int>::of(&QSpinBox::valueChanged), this, &SettingsDialog::onFontSizeChanged);
     connect(m_fontFamilyCombo, &QFontComboBox::currentFontChanged, this, &SettingsDialog::onFontFamilyChanged);
     
-    m_tabWidget->addTab(m_appearanceTab, "Appearance");
+    m_tabWidget->addTab(m_appearanceTab, tr("Appearance"));
 }
 
 void SettingsDialog::setupKeyboardTab() {
@@ -148,18 +158,18 @@ void SettingsDialog::setupKeyboardTab() {
     
     // Shortcuts
     m_newCommandEdit = new QKeySequenceEdit();
-    layout->addRow("New Command:", m_newCommandEdit);
+    layout->addRow(tr("New Command:"), m_newCommandEdit);
     
     m_saveCommandEdit = new QKeySequenceEdit();
-    layout->addRow("Save Command:", m_saveCommandEdit);
+    layout->addRow(tr("Save Command:"), m_saveCommandEdit);
     
     m_openCommandsEdit = new QKeySequenceEdit();
-    layout->addRow("Open Commands:", m_openCommandsEdit);
+    layout->addRow(tr("Open Commands:"), m_openCommandsEdit);
     
     m_startExecuteEdit = new QKeySequenceEdit();
-    layout->addRow("Start + Execute:", m_startExecuteEdit);
+    layout->addRow(tr("Validate + Run:"), m_startExecuteEdit);
     
-    m_tabWidget->addTab(m_keyboardTab, "Keyboard Shortcuts");
+    m_tabWidget->addTab(m_keyboardTab, tr("Keyboard Shortcuts"));
 }
 
 void SettingsDialog::setupHelpTab() {
@@ -167,43 +177,47 @@ void SettingsDialog::setupHelpTab() {
     QFormLayout* layout = new QFormLayout(m_helpTab);
 
     // Application Info
-    layout->addRow("Application Name:", new QLabel("CMD Manager"));
-    layout->addRow("Version:", new QLabel("v1.0.0"));
+    layout->addRow(tr("Application Name:"), new QLabel(tr("CMD Manager")));
+    layout->addRow(tr("Version:"), new QLabel("v1.0.0"));
 
     // About
-    QLabel* aboutLabel = new QLabel("CMD Manager is a free tool for managing and executing custom commands.");
+    QLabel* aboutLabel = new QLabel(tr("CMD Manager is a free tool for managing and executing custom commands."));
     aboutLabel->setWordWrap(true);
-    layout->addRow("About:", aboutLabel);
+    layout->addRow(tr("About:"), aboutLabel);
 
     // Help Link
-    QPushButton* helpButton = new QPushButton("Help Link");
+    QPushButton* helpButton = new QPushButton(tr("Help Link"));
     helpButton->setCursor(Qt::PointingHandCursor);
     connect(helpButton, &QPushButton::clicked, []() {
         QDesktopServices::openUrl(QUrl("https://github.com/KietDo0602/cmd-manager/issues"));
     });
-    layout->addRow("Help:", helpButton);
+    layout->addRow(tr("Help:"), helpButton);
 
     // Website
-    QPushButton* websiteButton = new QPushButton("My Website");
+    QPushButton* websiteButton = new QPushButton(tr("My Website"));
     websiteButton->setCursor(Qt::PointingHandCursor);
     connect(websiteButton, &QPushButton::clicked, []() {
         QDesktopServices::openUrl(QUrl("https://kietdo.io/"));
     });
-    layout->addRow("Website:", websiteButton);
+    layout->addRow(tr("Website:"), websiteButton);
 
     // Contact
-    QPushButton* contactButton = new QPushButton("Contact Me!");
+    QPushButton* contactButton = new QPushButton(tr("Contact Me!"));
     contactButton->setCursor(Qt::PointingHandCursor);
     connect(contactButton, &QPushButton::clicked, []() {
         QDesktopServices::openUrl(QUrl("mailto:kietdo0602@gmail.com"));
     });
-    layout->addRow("Contact:", contactButton);
+    layout->addRow(tr("Contact:"), contactButton);
 
-    m_tabWidget->addTab(m_helpTab, "Help");
+    m_tabWidget->addTab(m_helpTab, tr("Help"));
 }
 
 void SettingsDialog::loadSettings() {
     // General
+    int langIndex = m_languageCombo->findData(m_settings->getLanguage());
+    if (langIndex >= 0) {
+        m_languageCombo->setCurrentIndex(langIndex);
+    }
     m_defaultDirEdit->setText(m_settings->getDefaultDirectory());
     m_autoSaveCheck->setChecked(m_settings->getAutoSave());
     m_minimizeToTrayCheck->setChecked(m_settings->getMinimizeToTray());
@@ -283,6 +297,12 @@ void SettingsDialog::onFontFamilyChanged() {
 }
 
 void SettingsDialog::applySettings() {
+    // Check if language changed
+    SettingsManager::Language oldLang = m_settings->getLanguage();
+    SettingsManager::Language newLang = static_cast<SettingsManager::Language>(m_languageCombo->currentData().toInt());
+    bool languageChanged = (oldLang != newLang);
+    m_settings->setLanguage(newLang);
+
     // General
     m_settings->setDefaultDirectory(m_defaultDirEdit->text());
     m_settings->setAutoSave(m_autoSaveCheck->isChecked());
@@ -314,11 +334,17 @@ void SettingsDialog::applySettings() {
     
     // Apply theme to all windows immediately
     m_settings->applyThemeToAllWindows();
+
+    // Notify about language change
+    if (languageChanged) {
+        QMessageBox::information(this, tr("Language Changed"), 
+            tr("Language change will take effect after restarting the application."));
+    }
 }
 
 void SettingsDialog::onApplyClicked() {
     applySettings();
-    QMessageBox::information(this, "Settings Applied", "Settings have been applied successfully.");
+    QMessageBox::information(this, tr("Settings Applied"), tr("Settings have been applied successfully."));
 }
 
 void SettingsDialog::onOkClicked() {
@@ -331,12 +357,13 @@ void SettingsDialog::onCancelClicked() {
 }
 
 void SettingsDialog::onRestoreDefaultsClicked() {
-    QMessageBox::StandardButton reply = QMessageBox::question(this, "Restore Defaults",
-        "Are you sure you want to restore all settings to their default values?",
+    QMessageBox::StandardButton reply = QMessageBox::question(this, tr("Restore Defaults"),
+        tr("Are you sure you want to restore all settings to their default values?"),
         QMessageBox::Yes | QMessageBox::No);
     
     if (reply == QMessageBox::Yes) {
         // Restore defaults
+        m_languageCombo->setCurrentIndex(0); // Change language back to English
         m_defaultDirEdit->setText(QDir::homePath());
         m_autoSaveCheck->setChecked(false);
         m_minimizeToTrayCheck->setChecked(false);
@@ -379,66 +406,66 @@ void SettingsDialog::setupTerminalTab() {
     m_terminalTab = new QWidget();
     QVBoxLayout* layout = new QVBoxLayout(m_terminalTab);
     
-    QGroupBox* displayGroup = new QGroupBox("Display Options");
+    QGroupBox* displayGroup = new QGroupBox(tr("Display Options"));
     QVBoxLayout* displayLayout = new QVBoxLayout(displayGroup);
     
-    m_showCommandLabelCheck = new QCheckBox("Show command information before execution");
-    m_showCommandLabelCheck->setToolTip("When enabled, displays working directory, command, and separator before execution");
+    m_showCommandLabelCheck = new QCheckBox(tr("Show command information before execution"));
+    m_showCommandLabelCheck->setToolTip(tr("When enabled, displays working directory, command, and separator before execution"));
     displayLayout->addWidget(m_showCommandLabelCheck);
     
     displayLayout->addStretch();
     layout->addWidget(displayGroup);
     
-    QGroupBox* executionGroup = new QGroupBox("Execution Options");
+    QGroupBox* executionGroup = new QGroupBox(tr("Execution Options"));
     QVBoxLayout* executionLayout = new QVBoxLayout(executionGroup);
 
-    m_autoCloseTerminalCheck = new QCheckBox("Automatically close terminal when command finishes");
-    m_autoCloseTerminalCheck->setToolTip("When enabled, terminal window closes automatically after command execution completes");
+    m_autoCloseTerminalCheck = new QCheckBox(tr("Automatically close terminal when command finishes"));
+    m_autoCloseTerminalCheck->setToolTip(tr("When enabled, terminal window closes automatically after command execution completes"));
     executionLayout->addWidget(m_autoCloseTerminalCheck);
 
-    m_playCompletionSoundCheck = new QCheckBox("Play sound when command completes");
-    m_playCompletionSoundCheck->setToolTip("When enabled, plays a notification sound when command execution finishes");
+    m_playCompletionSoundCheck = new QCheckBox(tr("Play sound when command completes"));
+    m_playCompletionSoundCheck->setToolTip(tr("When enabled, plays a notification sound when command execution finishes"));
     executionLayout->addWidget(m_playCompletionSoundCheck);
     
-    m_instantRunCheck = new QCheckBox("Instant run from 'All Commands' menu");
-    m_instantRunCheck->setToolTip("When enabled, displays working directory, command, and separator before command gets executed inside the terminal. Only the output of the command and some necessary information are shown.");
+    m_instantRunCheck = new QCheckBox(tr("Instant run from Commands menu"));
+    m_instantRunCheck->setToolTip(tr("When enabled, displays working directory, command, and separator before command gets executed inside the terminal. Only the output of the command and some necessary information are shown."));
     executionLayout->addWidget(m_instantRunCheck);
     
     executionLayout->addStretch();
     layout->addWidget(executionGroup);
 
-    QGroupBox* appearanceGroup = new QGroupBox("Terminal Appearance");
+    QGroupBox* appearanceGroup = new QGroupBox(tr("Terminal Appearance"));
     QFormLayout* appearanceLayout = new QFormLayout(appearanceGroup);
     
     // Color scheme dropdown
     m_terminalColorSchemeCombo = new QComboBox();
-    m_terminalColorSchemeCombo->addItem("Neon Green (Default)", SettingsManager::NeonGreen);
-    m_terminalColorSchemeCombo->addItem("Classic (White on Black)", SettingsManager::Classic);
-    m_terminalColorSchemeCombo->addItem("Light Mode (Black on White)", SettingsManager::LightMode);
-    m_terminalColorSchemeCombo->addItem("Matrix (Cyan on Dark Blue)", SettingsManager::Matrix);
-    m_terminalColorSchemeCombo->addItem("Dracula", SettingsManager::Dracula);
-    m_terminalColorSchemeCombo->addItem("Monokai", SettingsManager::Monokai);
-    m_terminalColorSchemeCombo->addItem("Nord", SettingsManager::Nord);
-    m_terminalColorSchemeCombo->addItem("Solarized Dark", SettingsManager::SolarizedDark);
-    m_terminalColorSchemeCombo->addItem("Gruvbox Dark", SettingsManager::GruvboxDark);
-    m_terminalColorSchemeCombo->addItem("One Dark", SettingsManager::OneDark);
-    appearanceLayout->addRow("Color Scheme:", m_terminalColorSchemeCombo);
+    m_terminalColorSchemeCombo->addItem(tr("Neon Green (Default)"), SettingsManager::NeonGreen);
+    m_terminalColorSchemeCombo->addItem(tr("Classic (White on Black)"), SettingsManager::Classic);
+    m_terminalColorSchemeCombo->addItem(tr("Light Mode (Black on White)"), SettingsManager::LightMode);
+    m_terminalColorSchemeCombo->addItem(tr("Matrix (Cyan on Dark Blue)"), SettingsManager::Matrix);
+    m_terminalColorSchemeCombo->addItem(tr("Dracula"), SettingsManager::Dracula);
+    m_terminalColorSchemeCombo->addItem(tr("Monokai"), SettingsManager::Monokai);
+    m_terminalColorSchemeCombo->addItem(tr("Nord"), SettingsManager::Nord);
+    m_terminalColorSchemeCombo->addItem(tr("Solarized Dark"), SettingsManager::SolarizedDark);
+    m_terminalColorSchemeCombo->addItem(tr("Gruvbox Dark"), SettingsManager::GruvboxDark);
+    m_terminalColorSchemeCombo->addItem(tr("One Dark"), SettingsManager::OneDark);
+    appearanceLayout->addRow(tr("Color Scheme:"), m_terminalColorSchemeCombo);
 
     // Font family
     m_terminalFontCombo = new QFontComboBox();
     m_terminalFontCombo->setFontFilters(QFontComboBox::MonospacedFonts);
-    appearanceLayout->addRow("Font Family:", m_terminalFontCombo);
+    appearanceLayout->addRow(tr("Font Family:"), m_terminalFontCombo);
     
     // Font size
     m_terminalFontSizeSpin = new QSpinBox();
     m_terminalFontSizeSpin->setRange(8, 24);
     m_terminalFontSizeSpin->setSuffix(" pt");
-    appearanceLayout->addRow("Font Size:", m_terminalFontSizeSpin);
+    appearanceLayout->addRow(tr("Font Size:"), m_terminalFontSizeSpin);
     
     layout->addWidget(appearanceGroup);
     
     // Preview
-    QGroupBox* previewGroup = new QGroupBox("Preview");
+    QGroupBox* previewGroup = new QGroupBox(tr("Preview"));
     QVBoxLayout* previewLayout = new QVBoxLayout(previewGroup);
     
     m_terminalPreview = new QTextEdit();
@@ -459,7 +486,7 @@ void SettingsDialog::setupTerminalTab() {
     connect(m_terminalFontSizeSpin, QOverload<int>::of(&QSpinBox::valueChanged), 
             this, &SettingsDialog::onTerminalPreviewUpdate);
     
-    m_tabWidget->addTab(m_terminalTab, "Terminal");
+    m_tabWidget->addTab(m_terminalTab, tr("Terminal"));
 }
 
 void SettingsDialog::onTerminalPreviewUpdate() {
@@ -488,9 +515,9 @@ void SettingsDialog::onTerminalPreviewUpdate() {
 
 void SettingsDialog::onExportCommands() {
     QString fileName = QFileDialog::getSaveFileName(this, 
-        "Export Commands", 
+        tr("Export Commands"), 
         QDir::homePath() + "/cmd_manager_commands.json",
-        "JSON Files (*.json)");
+        tr("JSON Files (*.json)"));
     
     if (fileName.isEmpty()) {
         return;
@@ -507,23 +534,23 @@ void SettingsDialog::onExportCommands() {
         }
         
         if (QFile::copy(commandsFile, fileName)) {
-            QMessageBox::information(this, "Export Successful", 
-                QString("Commands exported successfully to:\n%1").arg(fileName));
+            QMessageBox::information(this, tr("Export Successful"), 
+                QString(tr("Commands exported successfully to:\n%1")).arg(fileName));
         } else {
-            QMessageBox::warning(this, "Export Failed", 
-                "Failed to export commands. Please check file permissions.");
+            QMessageBox::warning(this, tr("Export Failed"), 
+                tr("Failed to export commands. Please check file permissions."));
         }
     } else {
-        QMessageBox::warning(this, "No Commands", 
-            "No commands found to export.");
+        QMessageBox::warning(this, tr("No Commands"), 
+            tr("No commands found to export."));
     }
 }
 
 void SettingsDialog::onImportCommands() {
     QString fileName = QFileDialog::getOpenFileName(this, 
-        "Import Commands", 
+        tr("Import Commands"), 
         QDir::homePath(),
-        "JSON Files (*.json)");
+        tr("JSON Files (*.json)"));
     
     if (fileName.isEmpty()) {
         return;
@@ -532,8 +559,8 @@ void SettingsDialog::onImportCommands() {
     // Read the import file
     QFile importFile(fileName);
     if (!importFile.open(QIODevice::ReadOnly)) {
-        QMessageBox::warning(this, "Import Failed", 
-            "Failed to open file for reading.");
+        QMessageBox::warning(this, tr("Import Failed"), 
+            tr("Failed to open file for reading."));
         return;
     }
     
@@ -543,17 +570,17 @@ void SettingsDialog::onImportCommands() {
     // Validate JSON
     QJsonDocument importDoc = QJsonDocument::fromJson(importData);
     if (!importDoc.isObject()) {
-        QMessageBox::warning(this, "Invalid File", 
-            "The selected file is not a valid commands JSON file.");
+        QMessageBox::warning(this, tr("Invalid File"), 
+            tr("The selected file is not a valid commands JSON file."));
         return;
     }
     
     // Ask user how to handle conflicts
     QMessageBox::StandardButton reply = QMessageBox::question(this, 
-        "Import Commands",
-        "How do you want to handle existing commands?\n\n"
+        tr("Import Commands"),
+        tr("How do you want to handle existing commands?\n"
         "Yes - Merge (keep existing, add new)\n"
-        "No - Replace (overwrite all existing commands)",
+        "No - Replace (overwrite all existing commands)"),
         QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
     
     if (reply == QMessageBox::Cancel) {
@@ -594,10 +621,10 @@ void SettingsDialog::onImportCommands() {
         file.write(doc.toJson());
         file.close();
         
-        QMessageBox::information(this, "Import Successful", 
-            QString("Successfully imported commands from:\n%1").arg(fileName));
+        QMessageBox::information(this, tr("Import Successful"), 
+            QString(tr("Successfully imported commands from:\n%1")).arg(fileName));
     } else {
-        QMessageBox::warning(this, "Import Failed", 
-            "Failed to write commands. Please check file permissions.");
+        QMessageBox::warning(this, tr("Import Failed"), 
+            tr("Failed to write commands. Please check file permissions."));
     }
 }

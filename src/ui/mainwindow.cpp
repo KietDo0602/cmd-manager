@@ -6,7 +6,7 @@ QSet<QString> MainWindow::openedCommands;
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), process(new QProcess(this)) {
 
-    setWindowTitle("CMD Manager");
+    setWindowTitle(tr("CMD Manager"));
 
     // Setup system tray
     setupSystemTray();
@@ -14,19 +14,19 @@ MainWindow::MainWindow(QWidget *parent)
     QWidget *central = new QWidget(this);
     mainLayout = new QVBoxLayout(central);
 
-    // Top buttons row (New, All Commands, Save)
+    // Top buttons row (New, Commands Menu, Save)
     QHBoxLayout *topButtonsLayout = new QHBoxLayout();
     
-    newButton = new QPushButton("New");
-    allCommandsButton = new QPushButton("Commands Menu");
-    saveButton = new QPushButton("Save");
-    settingsButton = new QPushButton("Settings");
+    newButton = new QPushButton(tr("New"));
+    allCommandsButton = new QPushButton(tr("Commands Menu"));
+    saveButton = new QPushButton(tr("Save"));
+    settingsButton = new QPushButton(tr("Settings"));
     
     // Add stretch before and after the buttons to center them
     topButtonsLayout->addStretch();
     topButtonsLayout->addWidget(newButton);
-    topButtonsLayout->addWidget(allCommandsButton);
     topButtonsLayout->addWidget(saveButton);
+    topButtonsLayout->addWidget(allCommandsButton);
     topButtonsLayout->addWidget(settingsButton);
     topButtonsLayout->addStretch(); 
 
@@ -42,18 +42,18 @@ MainWindow::MainWindow(QWidget *parent)
     mainLayout->addLayout(topButtonsLayout);
 
     // Directory chooser
-    chooseDirButton = new QPushButton("Current Directory: (Not Set)");
+    chooseDirButton = new QPushButton(tr("Current Directory: (Not Set)"));
     connect(chooseDirButton, &QPushButton::clicked, this, &MainWindow::onChooseDirClicked);
     mainLayout->addWidget(chooseDirButton, 0, Qt::AlignCenter);
 
     // Command editor
     commandEdit = new QTextEdit();
-    commandEdit->setPlaceholderText("Enter command here...");
+    commandEdit->setPlaceholderText(tr("Enter command here..."));
     connect(commandEdit, &QTextEdit::textChanged, this, &MainWindow::onCommandTextChanged);
     mainLayout->addWidget(commandEdit);
 
     // Start button
-    startButton = new QPushButton("Start");
+    startButton = new QPushButton(tr("Validate Command"));
     connect(startButton, &QPushButton::clicked, this, &MainWindow::onStartClicked);
     mainLayout->addWidget(startButton);
 
@@ -63,11 +63,11 @@ MainWindow::MainWindow(QWidget *parent)
     mainLayout->addWidget(buttonContainer);
 
     // Execute and Clear button
-    executeButton = new QPushButton("Execute");
+    executeButton = new QPushButton(tr("Run Command"));
     executeButton->hide();
     connect(executeButton, &QPushButton::clicked, this, &MainWindow::onExecuteClicked);
 
-    clearButton = new QPushButton("Clear Commands");
+    clearButton = new QPushButton(tr("Clear Command"));
     clearButton->hide();
 
     // Layout for Execute and Clear side by side
@@ -103,15 +103,23 @@ void MainWindow::closeEvent(QCloseEvent *event) {
     if (SettingsManager::instance()->getMinimizeToTray()) {
         // Check if there are other MainWindow instances open
         int mainWindowCount = 0;
+        int totalAppWindows = 0;
+
         QWidgetList topLevelWidgets = QApplication::topLevelWidgets();
         for (QWidget* widget : topLevelWidgets) {
-            if (qobject_cast<MainWindow*>(widget) && widget->isVisible()) {
-                mainWindowCount++;
+            // Skip hidden widgets and the system tray menu
+            if (widget->isVisible() && !qobject_cast<QMenu*>(widget)) {
+                totalAppWindows++;
+                
+                MainWindow* mainWin = qobject_cast<MainWindow*>(widget);
+                if (mainWin) {
+                    mainWindowCount++;
+                }
             }
         }
-        
+         
         // If this is the last MainWindow, minimize to tray instead of closing
-        if (mainWindowCount == 1) {
+        if (mainWindowCount == 1 && totalAppWindows == 1) {
             if (hasUnsavedChanges && !currentCommandName.isEmpty()) {
                 int result = showUnsavedChangesDialog();
                 
@@ -131,8 +139,8 @@ void MainWindow::closeEvent(QCloseEvent *event) {
             hide();
             if (!trayIcon->isVisible()) {
                 trayIcon->show();
-                trayIcon->showMessage("CMD Manager", 
-                                     "Application minimized to tray. Double-click icon to restore.",
+                trayIcon->showMessage(tr("CMD Manager"), 
+                                     tr("Application minimized to tray. Double-click icon to restore."),
                                      QSystemTrayIcon::Information,
                                      2000);
             }
@@ -183,7 +191,7 @@ void MainWindow::setupSystemTray() {
     // Create tray icon
     trayIcon = new QSystemTrayIcon(this);
     trayIcon->setIcon(QIcon(":/images/app_icon.png"));
-    trayIcon->setToolTip("CMD Manager");
+    trayIcon->setToolTip(tr("CMD Manager"));
     
     // Create tray menu
     trayMenu = new QMenu(this);
@@ -195,14 +203,14 @@ void MainWindow::setupSystemTray() {
         activateWindow();
     });
     
-    QAction *newWindowAction = new QAction("New Window", this);
+    QAction *newWindowAction = new QAction(tr("New Window"), this);
     connect(newWindowAction, &QAction::triggered, []() {
         MainWindow *newWindow = new MainWindow();
         newWindow->setAttribute(Qt::WA_DeleteOnClose);
         newWindow->show();
     });
     
-    QAction *quitAction = new QAction("Quit", this);
+    QAction *quitAction = new QAction(tr("Quit"), this);
     connect(quitAction, &QAction::triggered, qApp, &QApplication::quit);
     
     trayMenu->addAction(showAction);
@@ -235,13 +243,13 @@ void MainWindow::setupSystemTray() {
 
 int MainWindow::showUnsavedChangesDialog() {
     QMessageBox msgBox(this);
-    msgBox.setWindowTitle("Unsaved Changes");
-    msgBox.setText(QString("You have unsaved changes in \"%1\". Do you want to save before closing?").arg(currentCommandName));
+    msgBox.setWindowTitle(tr("Unsaved Changes"));
+    msgBox.setText(QString(tr("You have unsaved changes in \"%1\". Do you want to save before closing?")).arg(currentCommandName));
     msgBox.setIcon(QMessageBox::Warning);
     
-    QPushButton *saveButton = msgBox.addButton("Save and Close", QMessageBox::AcceptRole);
-    QPushButton *dontSaveButton = msgBox.addButton("Don't Save", QMessageBox::DestructiveRole);
-    QPushButton *cancelButton = msgBox.addButton("Cancel", QMessageBox::RejectRole);
+    QPushButton *saveButton = msgBox.addButton(tr("Save and Close"), QMessageBox::AcceptRole);
+    QPushButton *dontSaveButton = msgBox.addButton(tr("Don't Save"), QMessageBox::DestructiveRole);
+    QPushButton *cancelButton = msgBox.addButton(tr("Cancel"), QMessageBox::RejectRole);
     
     msgBox.setDefaultButton(saveButton);
     msgBox.exec();
@@ -264,7 +272,7 @@ void MainWindow::onNewClicked() {
 void MainWindow::onSaveClicked() {
     QString commandText = commandEdit->toPlainText().trimmed();
     if (commandText.isEmpty()) {
-        QMessageBox::warning(this, "No Command", "Please enter a command to save.");
+        QMessageBox::warning(this, tr("No Command"), tr("Please enter a command to save."));
         return;
     }
     
@@ -273,8 +281,8 @@ void MainWindow::onSaveClicked() {
     
     if (isExistingCommand) {
         // Updating existing command - show confirmation
-        QMessageBox::StandardButton reply = QMessageBox::question(this, "Update Command",
-            QString("Do you want to update the existing command \"%1\" with these changes?").arg(currentCommandName),
+        QMessageBox::StandardButton reply = QMessageBox::question(this, tr("Update Command"),
+            QString(tr("Do you want to update the existing command \"%1\" with these changes?")).arg(currentCommandName),
             QMessageBox::Yes | QMessageBox::No);
         
         if (reply == QMessageBox::No) {
@@ -284,8 +292,8 @@ void MainWindow::onSaveClicked() {
     } else {
         // Creating new command - ask for name
         bool ok;
-        name = QInputDialog::getText(this, "Save Command", 
-                                    "Enter a name for this command:", 
+        name = QInputDialog::getText(this, tr("Save Command"), 
+                                    tr("Enter a name for this command:"), 
                                     QLineEdit::Normal, "", &ok);
         if (!ok || name.trimmed().isEmpty()) {
             return;
@@ -306,8 +314,8 @@ void MainWindow::onSaveClicked() {
         updateWindowTitle();
     }
     
-    QMessageBox::information(this, "Command Saved", 
-                           QString("Command '%1' has been saved successfully.").arg(name));
+    QMessageBox::information(this, tr("Command Saved"), 
+                           QString(tr("Command '%1' has been saved successfully.")).arg(name));
 }
 
 void MainWindow::onAllCommandsClicked() {
@@ -414,7 +422,7 @@ void MainWindow::storeOriginalState() {
 }
 
 void MainWindow::updateWindowTitle() {
-    QString title = "CMD Manager";
+    QString title = tr("CMD Manager");
     if (!currentCommandName.isEmpty()) {
         title += QString(" - %1").arg(currentCommandName);
         if (hasUnsavedChanges) {
@@ -461,8 +469,8 @@ void MainWindow::clearCommandsInternal() {
 
 void MainWindow::onClearClicked() {
     QMessageBox::StandardButton reply;
-    reply = QMessageBox::question(this, "Clear Commands",
-                                  "Are you sure you want to clear the command and reset everything?",
+    reply = QMessageBox::question(this, tr("Clear Commands"),
+                                  tr("Are you sure you want to clear the command and reset everything?"),
                                   QMessageBox::Yes | QMessageBox::No);
     if (reply == QMessageBox::Yes) {
         // Remove from opened commands if clearing
@@ -598,7 +606,7 @@ void MainWindow::loadCommand(const QJsonObject &commandData) {
 
 void MainWindow::updateDirectoryButton() {
     if (currentDir.isEmpty()) {
-        chooseDirButton->setText("Current Directory: (Not Set)");
+        chooseDirButton->setText(tr("Current Directory: (Not Set)"));
     } else {
         QFileInfo dirInfo(currentDir);
         QString displayText = dirInfo.fileName();
@@ -610,13 +618,13 @@ void MainWindow::updateDirectoryButton() {
             displayText = "..." + displayText.right(27);
         }
         
-        chooseDirButton->setText(QString("Current Directory: %1").arg(displayText));
+        chooseDirButton->setText(QString(tr("Current Directory: %1")).arg(displayText));
         chooseDirButton->setToolTip(currentDir);
     }
 }
 
 void MainWindow::onChooseDirClicked() {
-    QString dir = QFileDialog::getExistingDirectory(this, "Choose Directory", currentDir);
+    QString dir = QFileDialog::getExistingDirectory(this, tr("Choose Directory"), currentDir);
     if (!dir.isEmpty()) {
         currentDir = dir;
         updateDirectoryButton();
@@ -636,7 +644,7 @@ void MainWindow::onStartClicked() {
 
     QString cmdText = commandEdit->toPlainText();
     if (cmdText.isEmpty()) {
-        QMessageBox::warning(this, "No Command", "Please enter a command first.");
+        QMessageBox::warning(this, tr("No Command"), tr("Please enter a command first."));
         return;
     }
 
@@ -674,7 +682,7 @@ void MainWindow::onStartClicked() {
     filesLayout->addStretch();
 
     // Create a group box to hold rows
-    filesGroup = new QGroupBox("Files");
+    filesGroup = new QGroupBox(tr("Files"));
     filesGroup->setLayout(filesLayout);
 
     // Remove the Start button, replace with Execute
@@ -710,7 +718,7 @@ void MainWindow::onExecuteClicked() {
     // Create independent terminal dialog
     QDialog *terminal = new QDialog(nullptr); // No parent - makes it independent
     terminal->setAttribute(Qt::WA_DeleteOnClose);
-    terminal->setWindowTitle("CMD Manager - Command Execution");
+    terminal->setWindowTitle(tr("CMD Manager - Command Execution"));
     QVBoxLayout *layout = new QVBoxLayout(terminal);
 
     QTextEdit *output = new QTextEdit();
@@ -736,16 +744,16 @@ void MainWindow::onExecuteClicked() {
 
     layout->addWidget(output);
 
-    QPushButton *closeBtn = new QPushButton("Close");
+    QPushButton *closeBtn = new QPushButton(tr("Close"));
     layout->addWidget(closeBtn);
     connect(closeBtn, &QPushButton::clicked, terminal, &QDialog::close);
 
     QString workingDir = currentDir.isEmpty() ? QDir::homePath() : currentDir;
     if (SettingsManager::instance()->getShowCommandLabel()) {
-        output->append("Working Directory: " + workingDir);
-        output->append("Executing command:");
+        output->append(tr("Working Directory: ") + workingDir);
+        output->append(tr("Executing command:"));
         output->append(finalCmd);
-        output->append("======================= START COMMAND =======================");
+        output->append(tr("======================= START COMMAND ======================="));
     }
 
     QProcess *terminalProcess = new QProcess(terminal); // Use local process
@@ -762,11 +770,11 @@ void MainWindow::onExecuteClicked() {
     connect(terminalProcess, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished),
             [=](int exitCode, QProcess::ExitStatus exitStatus) {
         if (SettingsManager::instance()->getShowCommandLabel()) {
-            output->append("======================== END COMMAND ========================");
+            output->append(tr("======================== END COMMAND ========================"));
         }
-        output->append(QString("Process finished with exit code: %1").arg(exitCode));
+        output->append(QString(tr("Process finished with exit code: %1")).arg(exitCode));
         if (exitStatus == QProcess::CrashExit) {
-            output->append("Process crashed!");
+            output->append(tr("Process crashed!"));
         }
         output->moveCursor(QTextCursor::End);
 
@@ -789,7 +797,7 @@ void MainWindow::onExecuteClicked() {
     terminalProcess->start("/bin/bash", QStringList() << "-c" << finalCmd);
     
     if (!terminalProcess->waitForStarted(3000)) {
-        output->append("Error: Failed to start the process!");
+        output->append(tr("Error: Failed to start the process!"));
     }
 
     terminal->resize(800, 500);
@@ -800,11 +808,11 @@ void MainWindow::onInputButtonClicked() {
     QPushButton *btn = qobject_cast<QPushButton*>(sender());
     int idx = buttonIndexMap[btn];
     QString ext = QFileInfo(placeholders[idx].original).suffix();
-    QString file = QFileDialog::getOpenFileName(this, "Select Input File", currentDir,
+    QString file = QFileDialog::getOpenFileName(this, tr("Select Input File"), currentDir,
                                                QString("*.%1").arg(ext));
     if (!file.isEmpty()) {
         placeholders[idx].chosenPath = file;
-        btn->setText(QString("Input %1: %2").arg(idx + 1).arg(QFileInfo(file).fileName()));
+        btn->setText(QString(tr("Input %1: %2")).arg(idx + 1).arg(QFileInfo(file).fileName()));
     }
 }
 
@@ -812,11 +820,11 @@ void MainWindow::onOutputButtonClicked() {
     QPushButton *btn = qobject_cast<QPushButton*>(sender());
     int idx = buttonIndexMap[btn];
     QString ext = QFileInfo(placeholders[idx].original).suffix();
-    QString file = QFileDialog::getSaveFileName(this, "Select Output File", currentDir,
+    QString file = QFileDialog::getSaveFileName(this, tr("Select Output File"), currentDir,
                                                QString("*.%1").arg(ext));
     if (!file.isEmpty()) {
         placeholders[idx].chosenPath = file;
-        btn->setText(QString("Output %1: %2").arg(idx + 1).arg(QFileInfo(file).fileName()));
+        btn->setText(QString(tr("Output %1: %2")).arg(idx + 1).arg(QFileInfo(file).fileName()));
     }
 }
 
@@ -856,7 +864,7 @@ void MainWindow::clearDynamicButtons() {
 }
 
 CommandsMenuDialog::CommandsMenuDialog(QWidget *parent) : QDialog(parent) {
-    setWindowTitle("Commands Menu");
+    setWindowTitle(tr("Commands Menu"));
     setModal(false); // Make it non-modal
     setAttribute(Qt::WA_DeleteOnClose); // Auto-delete when closed
     resize(500, 400);
@@ -877,16 +885,16 @@ CommandsMenuDialog::CommandsMenuDialog(QWidget *parent) : QDialog(parent) {
     QVBoxLayout *layout = new QVBoxLayout(this);
     
     commandsList = new QListWidget(this);
-    layout->addWidget(new QLabel("Saved Commands:"));
+    layout->addWidget(new QLabel(tr("Saved Commands:")));
     layout->addWidget(commandsList);
     
     QHBoxLayout *buttonsLayout = new QHBoxLayout();
     
-    newButton = new QPushButton("New");
-    openButton = new QPushButton("Open");
-    runButton = new QPushButton("Run");
-    deleteButton = new QPushButton("Delete");
-    closeButton = new QPushButton("Close");
+    newButton = new QPushButton(tr("New"));
+    openButton = new QPushButton(tr("Open"));
+    runButton = new QPushButton(tr("Run"));
+    deleteButton = new QPushButton(tr("Delete"));
+    closeButton = new QPushButton(tr("Close"));
     
     buttonsLayout->addWidget(newButton);
     buttonsLayout->addWidget(openButton);
@@ -939,15 +947,15 @@ void CommandsMenuDialog::refreshCommandsList() {
 void CommandsMenuDialog::onCommandSelected() {
     QListWidgetItem *currentItem = commandsList->currentItem();
     if (!currentItem) {
-        QMessageBox::warning(this, "No Selection", "Please select a command to open.");
+        QMessageBox::warning(this, tr("No Selection"), tr("Please select a command to open."));
         return;
     }
     
     QString commandName = currentItem->text();
     
     if (MainWindow::openedCommands.contains(commandName)) {
-        QMessageBox::warning(this, "Command Already Open", 
-                            QString("The command '%1' is already opened in another window.").arg(commandName));
+        QMessageBox::warning(this, tr("Command Already Open"), 
+                            QString(tr("The command '%1' is already opened in another window.")).arg(commandName));
         return;
     }
     
@@ -968,15 +976,15 @@ void CommandsMenuDialog::onCommandSelected() {
 void CommandsMenuDialog::onDeleteCommand() {
     QListWidgetItem *currentItem = commandsList->currentItem();
     if (!currentItem) {
-        QMessageBox::warning(this, "No Selection", "Please select a command to delete.");
+        QMessageBox::warning(this, tr("No Selection"), tr("Please select a command to delete."));
         return;
     }
     
     QString commandName = currentItem->text();
     
     QMessageBox::StandardButton reply;
-    reply = QMessageBox::question(this, "Delete Command",
-                                  QString("Are you sure you want to delete the command '%1'?").arg(commandName),
+    reply = QMessageBox::question(this, tr("Delete Command"),
+                                  QString(tr("Are you sure you want to delete the command '%1'?")).arg(commandName),
                                   QMessageBox::Yes | QMessageBox::No);
     
     if (reply == QMessageBox::Yes) {
@@ -984,8 +992,8 @@ void CommandsMenuDialog::onDeleteCommand() {
         commands.remove(commandName);
         saveCommandsToJson(commands);
         refreshCommandsList();
-        QMessageBox::information(this, "Command Deleted", 
-                                QString("Command '%1' has been deleted.").arg(commandName));
+        QMessageBox::information(this, tr("Command Deleted"), 
+                                QString(tr("Command '%1' has been deleted.")).arg(commandName));
     }
 }
 
@@ -1035,7 +1043,7 @@ void MainWindow::applyThemeAndFont() {
 void CommandsMenuDialog::onRunCommand() {
     QListWidgetItem *currentItem = commandsList->currentItem();
     if (!currentItem) {
-        QMessageBox::warning(this, "No Selection", "Please select a command to run.");
+        QMessageBox::warning(this, tr("No Selection"), tr("Please select a command to run."));
         return;
     }
     
@@ -1054,7 +1062,7 @@ void CommandsMenuDialog::executeCommand(const QJsonObject &commandData) {
     QJsonArray filesArray = commandData["files"].toArray();
     
     if (command.isEmpty()) {
-        QMessageBox::warning(this, "Empty Command", "The selected command is empty.");
+        QMessageBox::warning(this, tr("Empty Command"), tr("The selected command is empty."));
         return;
     }
 
@@ -1080,7 +1088,7 @@ void CommandsMenuDialog::executeCommand(const QJsonObject &commandData) {
         // Create terminal execution window immediately
         QDialog *terminal = new QDialog(nullptr);
         terminal->setAttribute(Qt::WA_DeleteOnClose);
-        terminal->setWindowTitle("CMD Manager - Command Execution");
+        terminal->setWindowTitle(tr("CMD Manager - Command Execution"));
         
         QVBoxLayout *termLayout = new QVBoxLayout(terminal);
 
@@ -1107,17 +1115,17 @@ void CommandsMenuDialog::executeCommand(const QJsonObject &commandData) {
 
         termLayout->addWidget(output);
 
-        QPushButton *closeBtn = new QPushButton("Close");
+        QPushButton *closeBtn = new QPushButton(tr("Close"));
         termLayout->addWidget(closeBtn);
         connect(closeBtn, &QPushButton::clicked, terminal, &QDialog::close);
 
         // Check if command label should be shown
         QString workingDir = directory.isEmpty() ? QDir::homePath() : directory;
         if (SettingsManager::instance()->getShowCommandLabel()) {
-            output->append("Working Directory: " + workingDir);
-            output->append("Executing command:");
+            output->append(tr("Working Directory: ") + workingDir);
+            output->append(tr("Executing command:"));
             output->append(finalCmd);
-            output->append("======================= START COMMAND =======================");
+            output->append(tr("======================= START COMMAND ======================="));
         }
 
         QProcess *terminalProcess = new QProcess(terminal);
@@ -1134,11 +1142,11 @@ void CommandsMenuDialog::executeCommand(const QJsonObject &commandData) {
         connect(terminalProcess, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished),
                 [=](int exitCode, QProcess::ExitStatus exitStatus) {
             if (SettingsManager::instance()->getShowCommandLabel()) {
-                output->append("======================== END COMMAND ========================");
+                output->append(tr("======================== END COMMAND ========================"));
             }
-            output->append(QString("Process finished with exit code: %1").arg(exitCode));
+            output->append(QString(tr("Process finished with exit code: %1")).arg(exitCode));
             if (exitStatus == QProcess::CrashExit) {
-                output->append("Process crashed!");
+                output->append(tr("Process crashed!"));
             }
             output->moveCursor(QTextCursor::End);
 
@@ -1159,7 +1167,7 @@ void CommandsMenuDialog::executeCommand(const QJsonObject &commandData) {
         terminalProcess->start("/bin/bash", QStringList() << "-c" << finalCmd);
         
         if (!terminalProcess->waitForStarted(3000)) {
-            output->append("Error: Failed to start the process!");
+            output->append(tr("Error: Failed to start the process!"));
         }
 
         terminal->resize(800, 500);
@@ -1170,15 +1178,15 @@ void CommandsMenuDialog::executeCommand(const QJsonObject &commandData) {
     
     // Create a dialog to show file mappings and allow user to select files
     QDialog *fileDialog = new QDialog(this);
-    fileDialog->setWindowTitle("Configure Files for Execution");
+    fileDialog->setWindowTitle(tr("Configure Files for Execution"));
     fileDialog->setModal(true);
     fileDialog->resize(600, 400);
     
     QVBoxLayout *layout = new QVBoxLayout(fileDialog);
     
     // Add command info
-    layout->addWidget(new QLabel(QString("Command: %1").arg(command)));
-    layout->addWidget(new QLabel(QString("Directory: %1").arg(directory.isEmpty() ? "(Default)" : directory)));
+    layout->addWidget(new QLabel(QString(tr("Command: %1")).arg(command)));
+    layout->addWidget(new QLabel(QString(tr("Directory: %1")).arg(directory.isEmpty() ? tr("(Default)") : directory)));
     
     // Create file row widgets for each file in the command
     QList<FileRowWidget*> fileRows;
@@ -1223,8 +1231,8 @@ void CommandsMenuDialog::executeCommand(const QJsonObject &commandData) {
     
     // Add buttons
     QHBoxLayout *buttonLayout = new QHBoxLayout();
-    QPushButton *executeBtn = new QPushButton("Execute");
-    QPushButton *cancelBtn = new QPushButton("Cancel");
+    QPushButton *executeBtn = new QPushButton(tr("Execute"));
+    QPushButton *cancelBtn = new QPushButton(tr("Cancel"));
     
     buttonLayout->addStretch();
     buttonLayout->addWidget(executeBtn);
@@ -1252,7 +1260,7 @@ void CommandsMenuDialog::executeCommand(const QJsonObject &commandData) {
         // Create terminal execution window
         QDialog *terminal = new QDialog(nullptr); // Independent window
         terminal->setAttribute(Qt::WA_DeleteOnClose);
-        terminal->setWindowTitle("CMD Manager - Command Execution");
+        terminal->setWindowTitle(tr("CMD Manager - Command Execution"));
         
         QVBoxLayout *termLayout = new QVBoxLayout(terminal);
 
@@ -1279,17 +1287,17 @@ void CommandsMenuDialog::executeCommand(const QJsonObject &commandData) {
 
         termLayout->addWidget(output);
 
-        QPushButton *closeBtn = new QPushButton("Close");
+        QPushButton *closeBtn = new QPushButton(tr("Close"));
         termLayout->addWidget(closeBtn);
         connect(closeBtn, &QPushButton::clicked, terminal, &QDialog::close);
 
         // Display the command that will be executed
         QString workingDir = directory.isEmpty() ? QDir::homePath() : directory;
         if (SettingsManager::instance()->getShowCommandLabel()) {
-            output->append("Working Directory: " + workingDir);
-            output->append("Executing command:");
+            output->append(tr("Working Directory: ") + workingDir);
+            output->append(tr("Executing command:"));
             output->append(finalCmd);
-            output->append("======================= START COMMAND =======================");
+            output->append(tr("======================= START COMMAND ======================="));
         }
 
         QProcess *terminalProcess = new QProcess(terminal);
@@ -1306,11 +1314,11 @@ void CommandsMenuDialog::executeCommand(const QJsonObject &commandData) {
         connect(terminalProcess, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished),
                 [=](int exitCode, QProcess::ExitStatus exitStatus) {
             if (SettingsManager::instance()->getShowCommandLabel()) {
-                output->append("======================== END COMMAND ========================");
+                output->append(tr("======================== END COMMAND ========================"));
             }
-            output->append(QString("Process finished with exit code: %1").arg(exitCode));
+            output->append(QString(tr("Process finished with exit code: %1")).arg(exitCode));
             if (exitStatus == QProcess::CrashExit) {
-                output->append("Process crashed!");
+                output->append(tr("Process crashed!"));
             }
             output->moveCursor(QTextCursor::End);
 
@@ -1334,7 +1342,7 @@ void CommandsMenuDialog::executeCommand(const QJsonObject &commandData) {
         terminalProcess->start("/bin/bash", QStringList() << "-c" << finalCmd);
         
         if (!terminalProcess->waitForStarted(3000)) {
-            output->append("Error: Failed to start the process!");
+            output->append(tr("Error: Failed to start the process!"));
         }
 
         terminal->resize(800, 500);
@@ -1376,13 +1384,13 @@ void MainWindow::updateKeyboardShortcuts() {
     startExecuteShortcut->setKey(QKeySequence(settings->getStartExecuteShortcut()));
     
     // Set tooltips to show shortcuts
-    newButton->setToolTip(QString("New Command (%1)").arg(settings->getNewCommandShortcut()));
-    saveButton->setToolTip(QString("Save Command (%1)").arg(settings->getSaveCommandShortcut()));
-    allCommandsButton->setToolTip(QString("All Commands (%1)").arg(settings->getOpenCommandsShortcut()));
+    newButton->setToolTip(QString(tr("New Command (%1)")).arg(settings->getNewCommandShortcut()));
+    saveButton->setToolTip(QString(tr("Save Command (%1)")).arg(settings->getSaveCommandShortcut()));
+    allCommandsButton->setToolTip(QString(tr("All Commands (%1)")).arg(settings->getOpenCommandsShortcut()));
     
     QString startExecuteShortcut = settings->getStartExecuteShortcut();
-    startButton->setToolTip(QString("Start (%1)").arg(startExecuteShortcut));
-    executeButton->setToolTip(QString("Execute (%1)").arg(startExecuteShortcut));
+    startButton->setToolTip(QString(tr("Validate Command (%1)")).arg(startExecuteShortcut));
+    executeButton->setToolTip(QString(tr("Run Command (%1)")).arg(startExecuteShortcut));
 }
 
 void MainWindow::onStartExecuteShortcut() {

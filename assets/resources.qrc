@@ -6,6 +6,11 @@
     <file>images/arrow_up.svg</file>
     <file>images/arrow_down_light.svg</file>
     <file>images/arrow_up_light.svg</file>
+    <file>translations/cmd_manager_fr.qm</file>
+    <file>translations/cmd_manager_es.qm</file>
+    <file>translations/cmd_manager_zh.qm</file>
+    <file>translations/cmd_manager_ru.qm</file>
+    <file>translations/cmd_manager_vi.qm</file>
   </qresource>
 </RCC>
 

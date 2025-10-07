@@ -12,6 +12,21 @@ class SettingsManager : public QObject {
     Q_OBJECT
 
 public:
+    enum Language {
+        English,
+        French,
+        Spanish,
+        Chinese,
+        Russian,
+        Vietnamese
+    };
+    
+    // Language settings
+    Language getLanguage() const;
+    void setLanguage(Language lang);
+    QString getLanguageCode() const;
+    static QString getLanguageCode(Language lang);
+
     enum Theme {
         Dark,           // Default: Dark Theme
         Light,

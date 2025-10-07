@@ -1,5 +1,7 @@
-#include <QApplication>
 #include "mainwindow.h"
+#include "settingsmanager.h"
+
+#include <QApplication>
 #include <QMainWindow>
 #include <QToolBar>
 #include <QAction>
@@ -12,19 +14,10 @@
 #include <QFileDialog>
 #include <QProcess>
 #include <QPlainTextEdit>
-#include <QScrollArea>
-#include <QListWidget>
-#include <QInputDialog>
 #include <QMessageBox>
-#include <QJsonDocument>
-#include <QJsonObject>
-#include <QJsonArray>
-#include <QFile>
-#include <QStandardPaths>
-#include <QDir>
-#include <QCloseEvent>
-#include <QGroupBox>
 #include <QDebug>
+#include <QTranslator>
+#include <QString>
 #include <regex>
 
 
@@ -37,8 +30,8 @@ class TerminalWidget : public QWidget {
             output->setReadOnly(true);
             l->addWidget(output);
             QHBoxLayout* hb = new QHBoxLayout();
-            btnClose = new QPushButton("Close", this);
-            btnKill = new QPushButton("Kill", this);
+            btnClose = new QPushButton(tr("Close"), this);
+            btnKill = new QPushButton(tr("Kill"), this);
             hb->addStretch();
             hb->addWidget(btnKill);
             hb->addWidget(btnClose);
@@ -104,6 +97,20 @@ int main(int argc, char *argv[]) {
     app.setOrganizationName("CMD Manager");
     app.setApplicationVersion("1.0");
     app.setDesktopFileName("cmd-manager");
+
+    // Load translation
+    QTranslator translator;
+    QString langCode = SettingsManager::instance()->getLanguageCode();
+    
+    if (langCode != "en") {
+        QString translationFile = QString(":/translations/cmd_manager_%1.qm").arg(langCode);
+        if (translator.load(translationFile)) {
+            app.installTranslator(&translator);
+            qDebug() << "Loaded translation:" << translationFile;
+        } else {
+            qDebug() << "Failed to load translation:" << translationFile;
+        }
+    }
     
     // Set application icon
     app.setWindowIcon(QIcon(":/images/app_icon.png"));

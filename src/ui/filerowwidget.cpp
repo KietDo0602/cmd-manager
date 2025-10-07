@@ -7,10 +7,10 @@ FileRowWidget::FileRowWidget(const QString &placeholder, QWidget *parent)
 
     fileLabel = new QLabel(">> " + placeholder, this);
     roleCombo = new QComboBox(this);
-    roleCombo->addItems({"Input", "Output"});
+    roleCombo->addItems({tr("Input"), tr("Output")});
 
-    actionButton = new QPushButton("Choose File", this);
-    clearButton = new QPushButton("Clear File", this);
+    actionButton = new QPushButton(tr("Choose File"), this);
+    clearButton = new QPushButton(tr("Clear File"), this);
     clearButton->hide();
 
     QHBoxLayout *layout = new QHBoxLayout(this);
@@ -24,11 +24,11 @@ FileRowWidget::FileRowWidget(const QString &placeholder, QWidget *parent)
     setLayout(layout);
 
     connect(roleCombo, &QComboBox::currentTextChanged, this, [this](const QString &role) {
-        actionButton->setText(role == "Input" ? "Choose File" : "Create File");
+        actionButton->setText(role == tr("Input") ? tr("Choose File") : tr("Create File"));
     });
 
     connect(actionButton, &QPushButton::clicked, this, [this]() {
-        if (roleCombo->currentText() == "Input")
+        if (roleCombo->currentText() == tr("Input"))
             onChooseFile();
         else
             onCreateFile();
@@ -38,7 +38,7 @@ FileRowWidget::FileRowWidget(const QString &placeholder, QWidget *parent)
 }
 
 void FileRowWidget::onChooseFile() {
-    QString file = QFileDialog::getOpenFileName(this, "Choose Input File");
+    QString file = QFileDialog::getOpenFileName(this, tr("Choose Input File"));
     if (!file.isEmpty()) {
         selectedFile = file;
         updateUI();
@@ -47,7 +47,7 @@ void FileRowWidget::onChooseFile() {
 }
 
 void FileRowWidget::onCreateFile() {
-    QString file = QFileDialog::getSaveFileName(this, "Create Output File");
+    QString file = QFileDialog::getSaveFileName(this, tr("Create Output File"));
     if (!file.isEmpty()) {
         selectedFile = file;
         updateUI();

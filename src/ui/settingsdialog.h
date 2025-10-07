@@ -63,6 +63,7 @@ private:
     QPushButton* m_browseDirButton;
     QCheckBox* m_autoSaveCheck;
     QCheckBox* m_minimizeToTrayCheck;
+    QComboBox* m_languageCombo;
     
     // Appearance tab
     QWidget* m_appearanceTab;
