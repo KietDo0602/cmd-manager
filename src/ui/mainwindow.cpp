@@ -631,12 +631,16 @@ void MainWindow::loadCommand(const QJsonObject &commandData) {
             row->setSelectedFile(selectedFile);
         }
     }
+
+    // Apply current theme and font to all widgets (including newly created file rows)
+    applyThemeAndFont();
     
     // Store original state for change detection
     storeOriginalState();
     
     // Reset unsaved changes flag after loading
     hasUnsavedChanges = false;
+    hasAnyChanges = false;
     updateWindowTitle();
 }
 
@@ -729,6 +733,29 @@ void MainWindow::onStartClicked() {
     // Add group to the main layout
     mainLayout->addWidget(filesGroup);
     filesGroupAdded = true;
+
+    // Apply the current theme stylesheet to ensure styling is correct
+    SettingsManager* settings = SettingsManager::instance();
+    QString currentStyleSheet = settings->getCurrentThemeStyleSheet();
+    QFont appFont(settings->getFontFamily(), settings->getFontSize());
+    
+    // Apply to the group box and all file rows
+    filesGroup->setStyleSheet(currentStyleSheet);
+    for (FileRowWidget *row : fileRows) {
+        row->setStyleSheet(currentStyleSheet);
+        row->setFont(appFont);
+        // Also apply to children
+        QList<QWidget*> children = row->findChildren<QWidget*>();
+        for (QWidget* child : children) {
+            child->setStyleSheet(currentStyleSheet);
+            child->setFont(appFont);
+        }
+    }
+
+    // Also apply to the files group box
+    if (filesGroup) {
+        filesGroup->setFont(appFont);
+    }
 
     // Store the command template (store the actual text, not simplified)
     commandTemplate = cmdText;
@@ -1073,7 +1100,24 @@ void MainWindow::onSettingsClicked() {
 }
 
 void MainWindow::applyThemeAndFont() {
-    SettingsManager::instance()->applyThemeToAllWindows();
+    SettingsManager* settings = SettingsManager::instance();
+    
+    // Apply theme stylesheet to this window
+    QString currentStyleSheet = settings->getCurrentThemeStyleSheet();
+    setStyleSheet(currentStyleSheet);
+    
+    // Apply font to this window and all children
+    QFont appFont(settings->getFontFamily(), settings->getFontSize());
+    setFont(appFont);
+    
+    // Apply to all child widgets
+    QList<QWidget*> widgets = findChildren<QWidget*>();
+    for (QWidget* widget : widgets) {
+        widget->setFont(appFont);
+    }
+    
+    // Apply theme to all other top-level windows
+    settings->applyThemeToAllWindows();
 }
 
 void CommandsMenuDialog::onRunCommand() {

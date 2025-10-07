@@ -128,6 +128,10 @@
         <translation>Đã Lưu Lệnh</translation>
     </message>
     <message>
+        <source>Please enter a command to save.</source>
+        <translation>Hãy nhập lệnh để lưu.</translation>
+    </message>
+    <message>
         <source>You have unsaved work. Do you want to save before closing?</source>
         <translation>Bạn có thay đổi chưa lưu. Bạn có muốn lưu trước khi đóng?</translation>
     </message>
@@ -213,6 +217,10 @@
     </message>
     <message>
       <source>Choose File</source>
+      <translation>Loại Tệp</translation>
+    </message>
+    <message>
+      <source>Type:</source>
       <translation>Chọn tệp</translation>
     </message>
     <message>
