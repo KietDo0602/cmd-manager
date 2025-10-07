@@ -88,6 +88,7 @@ class MainWindow : public QMainWindow
         QSystemTrayIcon *trayIcon;
         QMenu *trayMenu;
         void setupSystemTray();
+        bool hasAnyChanges;
 
         // UI Components
         QVBoxLayout *mainLayout;

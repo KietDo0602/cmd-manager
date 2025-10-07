@@ -17,7 +17,7 @@
     </message>
     <message>
         <source>Commands Menu</source>
-        <translation>Các Lệnh</translation>
+        <translation>Menu Lệnh</translation>
     </message>
     <message>
         <source>Select Input File</source>
@@ -40,8 +40,24 @@
         <translation>Cài đặt</translation>
     </message>
     <message>
+        <source>Unsaved Changes</source>
+        <translation>Thay đổi chưa được lưu</translation>
+    </message>
+    <message>
         <source>Close</source>
         <translation>Đóng</translation>
+    </message>
+    <message>
+        <source>Don't Save</source>
+        <translation>Không Lưu</translation>
+    </message>
+    <message>
+        <source>Save and Close</source>
+        <translation>Lưu và Đóng</translation>
+    </message>
+    <message>
+        <source>Save and Minimize</source>
+        <translation>Lưu và Thu Nhỏ Cửa Sổ</translation>
     </message>
     <message>
         <source>Save</source>
@@ -112,6 +128,10 @@
         <translation>Đã Lưu Lệnh</translation>
     </message>
     <message>
+        <source>You have unsaved work. Do you want to save before closing?</source>
+        <translation>Bạn có thay đổi chưa lưu. Bạn có muốn lưu trước khi đóng?</translation>
+    </message>
+    <message>
         <source>Command '%1' has been saved successfully.</source>
         <translation>Lệnh '%1' đã được lưu về máy thành công.</translation>
     </message>
@@ -140,12 +160,12 @@
         <translation>Cập Nhật Lệnh</translation>
     </message>
     <message>
-        <source>Do you want to update the existing command \"%1\" with these changes?</source>
-        <translation>Bạn có muốn cập nhật lệnh hiện tại \"%1\" với những thay đổi này không?</translation>
+        <source>Do you want to update the existing command "%1" with these changes?</source>
+        <translation>Bạn có muốn cập nhật lệnh "%1" hiện tại với những thay đổi mới này không?</translation>
     </message>
     <message>
-        <source>You have unsaved changes in \"%1\". Do you want to save before closing?</source>
-        <translation>Bạn có thay đổi chưa được lưu trong \"%1\". Bạn có muốn lưu trước khi đóng không?</translation>
+        <source>You have unsaved changes in "%1". Do you want to save before closing?</source>
+        <translation>Bạn có thay đổi chưa được lưu trong "%1". Bạn có muốn lưu trước khi đóng không?</translation>
     </message>
     <message>
         <source>Cancel</source>
@@ -185,11 +205,11 @@
     <name>FileRowWidget</name>
     <message>
       <source>Input</source>
-      <translation>Đầu vào</translation>
+      <translation>Tệp Đầu vào</translation>
     </message>
     <message>
       <source>Output</source>
-      <translation>Đầu ra</translation>
+      <translation>Tệp Đầu ra</translation>
     </message>
     <message>
       <source>Choose File</source>
@@ -693,7 +713,7 @@
     <name>CommandsMenuDialog</name>
     <message>
         <source>Commands Menu</source>
-        <translation>Các Lệnh</translation>
+        <translation>Menu Lệnh</translation>
     </message>
     <message>
         <source>Saved Commands:</source>

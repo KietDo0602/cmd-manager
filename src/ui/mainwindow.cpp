@@ -4,7 +4,7 @@
 QSet<QString> MainWindow::openedCommands;
 
 MainWindow::MainWindow(QWidget *parent)
-    : QMainWindow(parent), process(new QProcess(this)) {
+    : QMainWindow(parent), process(new QProcess(this)), hasAnyChanges(false) {
 
     setWindowTitle(tr("CMD Manager"));
 
@@ -99,15 +99,27 @@ MainWindow::~MainWindow() {
 }
 
 void MainWindow::closeEvent(QCloseEvent *event) {
+    // Check if there are unsaved changes (either in a saved command or new text)
+    bool hasUnsavedWork = false;
+    QString promptMessage;
+    
+    if (!currentCommandName.isEmpty() && hasUnsavedChanges) {
+        // Saved command with changes
+        hasUnsavedWork = true;
+        promptMessage = QString(tr("You have unsaved changes in \"%1\". Do you want to save before closing?")).arg(currentCommandName);
+    } else if (currentCommandName.isEmpty() && hasAnyChanges && !commandEdit->toPlainText().trimmed().isEmpty()) {
+        // New unsaved command with text
+        hasUnsavedWork = true;
+        promptMessage = tr("You have unsaved work. Do you want to save before closing?");
+    }
+    
     // Check if minimize to tray is enabled
     if (SettingsManager::instance()->getMinimizeToTray()) {
-        // Check if there are other MainWindow instances open
         int mainWindowCount = 0;
         int totalAppWindows = 0;
-
+        
         QWidgetList topLevelWidgets = QApplication::topLevelWidgets();
         for (QWidget* widget : topLevelWidgets) {
-            // Skip hidden widgets and the system tray menu
             if (widget->isVisible() && !qobject_cast<QMenu*>(widget)) {
                 totalAppWindows++;
                 
@@ -117,65 +129,81 @@ void MainWindow::closeEvent(QCloseEvent *event) {
                 }
             }
         }
-         
-        // If this is the last MainWindow, minimize to tray instead of closing
+        
         if (mainWindowCount == 1 && totalAppWindows == 1) {
-            if (hasUnsavedChanges && !currentCommandName.isEmpty()) {
-                int result = showUnsavedChangesDialog();
+            // Handle unsaved work before minimizing to tray
+            if (hasUnsavedWork) {
+                QMessageBox msgBox(this);
+                msgBox.setWindowTitle(tr("Unsaved Changes"));
+                msgBox.setText(promptMessage);
+                msgBox.setIcon(QMessageBox::Warning);
                 
-                switch (result) {
-                    case QMessageBox::Save:
-                        onSaveClicked();
-                        break;
-                    case QMessageBox::Cancel:
+                QPushButton *saveButton = msgBox.addButton(tr("Save and Minimize"), QMessageBox::AcceptRole);
+                QPushButton *dontSaveButton = msgBox.addButton(tr("Don't Save"), QMessageBox::DestructiveRole);
+                QPushButton *cancelButton = msgBox.addButton(tr("Cancel"), QMessageBox::RejectRole);
+                
+                msgBox.setDefaultButton(saveButton);
+                msgBox.exec();
+                
+                if (msgBox.clickedButton() == saveButton) {
+                    onSaveClicked();
+                    // Check if save was successful (user didn't cancel save dialog)
+                    if (currentCommandName.isEmpty() && !commandEdit->toPlainText().trimmed().isEmpty()) {
+                        // User cancelled the save dialog
                         event->ignore();
                         return;
-                    case QMessageBox::Discard:
-                        break;
+                    }
+                } else if (msgBox.clickedButton() == cancelButton) {
+                    event->ignore();
+                    return;
                 }
+                // If "Don't Save", continue with minimize
             }
             
-            // Hide window and show tray icon
-            hide();
-            if (!trayIcon->isVisible()) {
-                trayIcon->show();
-                trayIcon->showMessage(tr("CMD Manager"), 
-                                     tr("Application minimized to tray. Double-click icon to restore."),
-                                     QSystemTrayIcon::Information,
-                                     2000);
-            }
-            
-            // Remove from opened commands
             if (!currentCommandName.isEmpty()) {
                 openedCommands.remove(currentCommandName);
             }
             
+            hide();
             event->ignore();
             return;
         }
     }
     
-    // Normal close behavior
-    if (hasUnsavedChanges && !currentCommandName.isEmpty()) {
-        int result = showUnsavedChangesDialog();
+    // Normal close behavior with unsaved changes check
+    if (hasUnsavedWork) {
+        QMessageBox msgBox(this);
+        msgBox.setWindowTitle(tr("Unsaved Changes"));
+        msgBox.setText(promptMessage);
+        msgBox.setIcon(QMessageBox::Warning);
         
-        switch (result) {
-            case QMessageBox::Save:
-                onSaveClicked();
-                if (!currentCommandName.isEmpty()) {
-                    openedCommands.remove(currentCommandName);
-                }
-                event->accept();
-                break;
-            case QMessageBox::Discard:
-                if (!currentCommandName.isEmpty()) {
-                    openedCommands.remove(currentCommandName);
-                }
-                event->accept();
-                break;
-            case QMessageBox::Cancel:
+        QPushButton *saveButton = msgBox.addButton(tr("Save and Close"), QMessageBox::AcceptRole);
+        QPushButton *dontSaveButton = msgBox.addButton(tr("Don't Save"), QMessageBox::DestructiveRole);
+        QPushButton *cancelButton = msgBox.addButton(tr("Cancel"), QMessageBox::RejectRole);
+        
+        msgBox.setDefaultButton(saveButton);
+        msgBox.exec();
+        
+        if (msgBox.clickedButton() == saveButton) {
+            onSaveClicked();
+            // Check if save was successful
+            if (currentCommandName.isEmpty() && !commandEdit->toPlainText().trimmed().isEmpty()) {
+                // User cancelled the save dialog
                 event->ignore();
                 return;
+            }
+            if (!currentCommandName.isEmpty()) {
+                openedCommands.remove(currentCommandName);
+            }
+            event->accept();
+        } else if (msgBox.clickedButton() == dontSaveButton) {
+            if (!currentCommandName.isEmpty()) {
+                openedCommands.remove(currentCommandName);
+            }
+            event->accept();
+        } else {
+            event->ignore();
+            return;
         }
     } else {
         if (!currentCommandName.isEmpty()) {
@@ -313,6 +341,9 @@ void MainWindow::onSaveClicked() {
         storeOriginalState();
         updateWindowTitle();
     }
+
+    // Reset "any changes" after successful save
+    hasAnyChanges = false;
     
     QMessageBox::information(this, tr("Command Saved"), 
                            QString(tr("Command '%1' has been saved successfully.")).arg(name));
@@ -325,6 +356,10 @@ void MainWindow::onAllCommandsClicked() {
 }
 
 void MainWindow::onCommandTextChanged() {
+    // Track if the user has made any changes to the text area
+    if (!commandEdit->toPlainText().trimmed().isEmpty()) {
+      hasAnyChanges = true;
+    }
     // Check if we're in execute mode (file rows are shown)
     if (executeButton->isVisible()) {
         QString currentText = commandEdit->toPlainText();
@@ -464,6 +499,7 @@ void MainWindow::clearCommandsInternal() {
     // Clear command name and reset change tracking
     currentCommandName.clear();
     hasUnsavedChanges = false;
+    hasAnyChanges = false;
     updateWindowTitle();
 }
 
