@@ -26,7 +26,7 @@ target_include_directories(CMD-Manager PRIVATE
 )
 
 # Link Qt libraries
-target_link_libraries(CMD-Manager Qt5::Widgets)
+target_link_libraries(CMD-Manager PRIVATE Qt5::Core Qt5::Gui Qt5::Widgets Qt5::Svg)
 
 # Install binary
 install(TARGETS CMD-Manager

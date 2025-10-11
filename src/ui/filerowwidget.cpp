@@ -15,7 +15,7 @@ FileRowWidget::FileRowWidget(const QString &placeholder, QWidget *parent)
 
     QHBoxLayout *layout = new QHBoxLayout(this);
     layout->addWidget(fileLabel);
-    layout->addWidget(new QLabel("Type:"));
+    layout->addWidget(new QLabel(tr("Type:")));
     layout->addWidget(roleCombo);
     layout->addWidget(actionButton);
     layout->addWidget(clearButton);

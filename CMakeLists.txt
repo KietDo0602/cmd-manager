@@ -3,7 +3,7 @@ project(CMD-Manager)
 
 set(CMAKE_AUTOMOC ON)
 
-find_package(Qt5 COMPONENTS Widgets REQUIRED)
+find_package(Qt5 COMPONENTS Widgets Core Gui Svg REQUIRED)
 
 # Add subdirectories
 add_subdirectory(src)

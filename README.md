@@ -133,10 +133,10 @@ Make sure to list any OS-specific problems inside the branch name or description
 - [x] Sound / Notification On Command Complete
 - [x] Export All Commands to JSON file
 - [x] Load Commands from JSON file
-- [ ] Language Support
-- [ ] Search / Filter for Commands List
-- [ ] Sort by File name / Recently Opened
-- [ ] Star command - will go to the top
+- [x] Language Support
+- [x] Search for Commands Menu
+- [x] Sort by File name / Recently Opened
+- [x] Pinned command - will go to the top
 - [ ] Drag and Drop Support
 - [ ] Command Validation and Preview
 - [ ] Release 1.0 version

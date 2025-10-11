@@ -15,6 +15,8 @@ SettingsManager* SettingsManager::instance() {
 SettingsManager::SettingsManager(QObject* parent) : QObject(parent) {
     QString configPath = QStandardPaths::writableLocation(QStandardPaths::ConfigLocation);
     QDir().mkpath(configPath + "/CMDManager");
+    qDebug() << configPath + "CMDManager/settings.ini";
+    qDebug() << configPath + "CMDManager/commands.json";
     m_settings = new QSettings(configPath + "/CMDManager/settings.ini", QSettings::IniFormat, this);
 }
 

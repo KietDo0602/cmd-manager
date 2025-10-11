@@ -9,6 +9,7 @@
 #include <QMainWindow>
 #include <QSystemTrayIcon>
 #include <QShortcut>
+#include <QSvgRenderer>
 #include <QTimer>
 #include <QKeySequence>
 #include <QTextEdit>
@@ -28,10 +29,19 @@
 #include <QListWidget>
 #include <QDialog>
 #include <QLabel>
+#include <QLineEdit>
+#include <QComboBox>
 #include <QSet>
 #include <QCloseEvent>
 #include <QAction>
 #include <QMenu>
+#include <QDateTime>
+#include <algorithm>
+#include <QPixmap>
+#include <QIcon>
+#include <QFile>
+#include <QIODevice>
+#include <QPainter>
 
 struct FilePlaceholder {
     QString original;
@@ -156,12 +166,16 @@ class CommandsMenuDialog : public QDialog
     Q_OBJECT
     public:
         CommandsMenuDialog(QWidget *parent = nullptr);
+        void updateCommandsList();
 
     private slots:
         void onCommandSelected();
         void onDeleteCommand();
         void onNewClicked();
         void onRunCommand();
+        void onSearchTextChanged(const QString &text);
+        void onSortChanged(int index);
+        void onPinToggle();
 
     private:
         QListWidget *commandsList;
@@ -170,12 +184,24 @@ class CommandsMenuDialog : public QDialog
         QPushButton *runButton;
         QPushButton *deleteButton;
         QPushButton *closeButton;
+        QPushButton *pinButton;
+        QLineEdit *searchBox;
+        QComboBox *sortCombo;
+
+        enum SortMode {
+          SortByName,
+          SortByRecentlyOpened
+        };
+
+        SortMode currentSortMode;
+        QString currentSearchText;
         
         void refreshCommandsList();
         QJsonObject loadCommandsFromJson();
         void saveCommandsToJson(const QJsonObject &commands);
         QString getConfigFilePath();
         void executeCommand(const QJsonObject &commands);
+        void togglePin(const QString &commandName);
 };
 
 #endif // MAINWINDOW_H

@@ -91,6 +91,30 @@ MainWindow::MainWindow(QWidget *parent)
     applyThemeAndFont();
 }
 
+QIcon createColoredIcon(const QString& svgPath, const QColor& color) {
+    // Read the SVG file
+    QFile file(svgPath);
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        return QIcon();
+    }
+    
+    QString svgContent = file.readAll();
+    file.close();
+    
+    // Replace currentColor with actual color
+    svgContent.replace("currentColor", color.name());
+    
+    // Create pixmap from modified SVG
+    QSvgRenderer renderer(svgContent.toUtf8());
+    QPixmap pixmap(24, 24);
+    pixmap.fill(Qt::transparent);
+    
+    QPainter painter(&pixmap);
+    renderer.render(&painter);
+    
+    return QIcon(pixmap);
+}
+
 MainWindow::~MainWindow() {
     // Remove this command from opened commands when window closes
     if (!currentCommandName.isEmpty()) {
@@ -352,6 +376,7 @@ void MainWindow::onSaveClicked() {
 void MainWindow::onAllCommandsClicked() {
     CommandsMenuDialog *dialog = new CommandsMenuDialog(nullptr);
     dialog->setAttribute(Qt::WA_DeleteOnClose);
+    dialog->updateCommandsList();
     dialog->show();
 }
 
@@ -528,6 +553,18 @@ void MainWindow::saveCommandToJson(const QString &name, const QString &command, 
     commandData["command"] = command;
     commandData["directory"] = currentDir;
     
+    // Add metadata
+    if (commands.contains(name)) {
+        // Preserve existing metadata when updating
+        QJsonObject existing = commands[name].toObject();
+        commandData["pinned"] = existing.contains("pinned") ? existing.value("pinned").toBool() : false;
+        commandData["lastOpened"] = existing.contains("lastOpened") ? existing.value("lastOpened").toDouble() : 0.0;
+    } else {
+        // New command
+        commandData["pinned"] = false;
+        commandData["lastOpened"] = QDateTime::currentMSecsSinceEpoch();
+    }
+    
     QJsonArray filesArray;
     for (FileRowWidget *row : fileRows) {
         QJsonObject fileData;
@@ -548,6 +585,9 @@ void MainWindow::saveCommandToJson(const QString &name, const QString &command, 
         QJsonDocument doc(commands);
         file.write(doc.toJson());
         file.close();
+
+        // Notify that commands have changed
+        SettingsManager::instance()->commandsChanged();
     }
 }
 
@@ -926,11 +966,12 @@ void MainWindow::clearDynamicButtons() {
     buttonIndexMap.clear();
 }
 
-CommandsMenuDialog::CommandsMenuDialog(QWidget *parent) : QDialog(parent) {
+CommandsMenuDialog::CommandsMenuDialog(QWidget *parent) 
+  : QDialog(parent), currentSortMode(SortByName), currentSearchText("") {
     setWindowTitle(tr("Commands Menu"));
     setModal(false); // Make it non-modal
     setAttribute(Qt::WA_DeleteOnClose); // Auto-delete when closed
-    resize(500, 400);
+    resize(600, 400);
     
     // Center the dialog on screen if no parent
     if (!parent) {
@@ -946,35 +987,62 @@ CommandsMenuDialog::CommandsMenuDialog(QWidget *parent) : QDialog(parent) {
     }
     
     QVBoxLayout *layout = new QVBoxLayout(this);
+
+    // Search and sort controls
+    QHBoxLayout *controlsLayout = new QHBoxLayout();
+    
+    QLabel *searchLabel = new QLabel(tr("Search:"));
+    searchBox = new QLineEdit();
+    searchBox->setPlaceholderText(tr("Search Commands..."));
+    
+    QLabel *sortLabel = new QLabel(tr("Sort By:"));
+    sortCombo = new QComboBox();
+    sortCombo->addItem(tr("Name"), SortByName);
+    sortCombo->addItem(tr("Recently Opened"), SortByRecentlyOpened);
+    
+    controlsLayout->addWidget(searchLabel);
+    controlsLayout->addWidget(searchBox, 1);
+    controlsLayout->addWidget(sortLabel);
+    controlsLayout->addWidget(sortCombo);
+    
+    layout->addLayout(controlsLayout);
+
     
     commandsList = new QListWidget(this);
     layout->addWidget(new QLabel(tr("Saved Commands:")));
-    layout->addWidget(commandsList);
-    
+    commandsList->setAlternatingRowColors(true);
+    layout->addWidget(commandsList, 1);
+
+    // Buttons
     QHBoxLayout *buttonsLayout = new QHBoxLayout();
     
     newButton = new QPushButton(tr("New"));
     openButton = new QPushButton(tr("Open"));
     runButton = new QPushButton(tr("Run"));
+    pinButton = new QPushButton(tr("Pin/Unpin"));
     deleteButton = new QPushButton(tr("Delete"));
-    closeButton = new QPushButton(tr("Close"));
     
     buttonsLayout->addWidget(newButton);
     buttonsLayout->addWidget(openButton);
     buttonsLayout->addWidget(runButton);
+    buttonsLayout->addWidget(pinButton);
     buttonsLayout->addWidget(deleteButton);
     buttonsLayout->addStretch();
-    buttonsLayout->addWidget(closeButton);
     
     layout->addLayout(buttonsLayout);
     
     connect(newButton, &QPushButton::clicked, this, &CommandsMenuDialog::onNewClicked);
     connect(openButton, &QPushButton::clicked, this, &CommandsMenuDialog::onCommandSelected);
     connect(runButton, &QPushButton::clicked, this, &CommandsMenuDialog::onRunCommand);
-
+    connect(pinButton, &QPushButton::clicked, this, &CommandsMenuDialog::onPinToggle);
     connect(deleteButton, &QPushButton::clicked, this, &CommandsMenuDialog::onDeleteCommand);
-    connect(closeButton, &QPushButton::clicked, this, &QDialog::close);
     connect(commandsList, &QListWidget::itemDoubleClicked, this, &CommandsMenuDialog::onCommandSelected);
+
+    connect(searchBox, &QLineEdit::textChanged, this, &CommandsMenuDialog::onSearchTextChanged);
+    connect(sortCombo, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &CommandsMenuDialog::onSortChanged);
+
+    // Connect to commands changed signal for auto-refresh
+    connect(SettingsManager::instance(), &SettingsManager::commandsChanged, this, &CommandsMenuDialog::refreshCommandsList);
     
     refreshCommandsList();
 
@@ -999,11 +1067,175 @@ void CommandsMenuDialog::onNewClicked() {
 }
 
 void CommandsMenuDialog::refreshCommandsList() {
+    currentSearchText = searchBox->text();
+    currentSortMode = static_cast<SortMode>(sortCombo->currentData().toInt());
+    updateCommandsList();
+}
+
+void CommandsMenuDialog::updateCommandsList() {
     commandsList->clear();
     QJsonObject commands = loadCommandsFromJson();
     
+    // Create list of command items with metadata
+    struct CommandItem {
+        QString name;
+        QString command;
+        bool pinned;
+        qint64 lastOpened;
+    };
+    
+    QList<CommandItem> items;
     for (auto it = commands.begin(); it != commands.end(); ++it) {
-        commandsList->addItem(it.key());
+        QJsonObject cmdData = it.value().toObject();
+        QString commandText = cmdData["command"].toString();
+        
+        // Apply search filter
+        if (!currentSearchText.isEmpty()) {
+            bool matchesName = it.key().contains(currentSearchText, Qt::CaseInsensitive);
+            bool matchesCommand = commandText.contains(currentSearchText, Qt::CaseInsensitive);
+            if (!matchesName && !matchesCommand) {
+                continue;
+            }
+        }
+        
+        CommandItem item;
+        item.name = it.key();
+        item.command = commandText;
+        item.pinned = cmdData.contains("pinned") ? cmdData.value("pinned").toBool() : false;
+        item.lastOpened = cmdData.contains("lastOpened") ? cmdData.value("lastOpened").toDouble() : 0.0;
+        items.append(item);
+    }
+    
+    // Sort items
+    if (currentSortMode == SortByRecentlyOpened) {
+        std::sort(items.begin(), items.end(), [](const CommandItem &a, const CommandItem &b) {
+            // Pinned items always first
+            if (a.pinned != b.pinned) return a.pinned > b.pinned;
+            // Then by last opened (most recent first)
+            return a.lastOpened > b.lastOpened;
+        });
+    } else { // SortByName
+        std::sort(items.begin(), items.end(), [](const CommandItem &a, const CommandItem &b) {
+            // Pinned items always first
+            if (a.pinned != b.pinned) return a.pinned > b.pinned;
+            // Then alphabetically
+            return a.name.toLower() < b.name.toLower();
+        });
+    }
+
+    // Get theme color for icon
+    SettingsManager* settings = SettingsManager::instance();
+    QColor iconColor;
+    switch (settings->getTheme()) {
+        case SettingsManager::Light:
+            iconColor = QColor("#333333");
+            break;
+        case SettingsManager::Contrast:
+            iconColor = QColor("#FFFFFF");
+            break;
+        default: // Dark
+            iconColor = QColor("#E0E0E0");
+            break;
+    }
+
+    // Add items to list
+    for (const CommandItem &item : items) {
+        QListWidgetItem *listItem = new QListWidgetItem(item.name);
+
+        QString pinnedText = "";
+        
+        // Add pin icon for pinned items
+        if (item.pinned) {
+            QIcon pinIcon = createColoredIcon(":/images/pin_icon.svg", iconColor);
+            listItem->setIcon(pinIcon);
+            pinnedText = tr("Pinned");
+            
+            // Bold font for pinned items
+            QFont font = listItem->font();
+            font.setBold(true);
+            listItem->setFont(font);
+        }
+
+        qint64 timestamp = item.lastOpened;
+        QDateTime dateTime = QDateTime::fromMSecsSinceEpoch(timestamp);
+        QString formattedDate = dateTime.toString("MMM d, yyyy hh:mm AP");
+
+        
+        // Create rich tooltip with command preview
+        QString tooltip = QString(
+            "<div style='"
+            "background-color: #1e1e1e;"
+            "color: #d4d4d4;"
+            "font-family: &quot;Fira Code&quot;, &quot;Courier New&quot;, monospace;"
+            "font-size: 14px;"
+            "padding: 12px 16px;"
+            "border-radius: 8px;"
+            "box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);"
+            "max-width: 600px;"
+            "white-space: pre-wrap;"
+            "line-height: 1.5;'>"
+            "<div style='margin-bottom: 8px;'>"
+            "<strong style='color: #9cdcfe;'>%1</strong> &nbsp;•&nbsp; "
+            "<span style='color: %2;'>%3</span> &nbsp;•&nbsp; "
+            "<span style='color: #808080;'>Last opened: %4</span>"
+            "</div>"
+            "<div>%5</div>"
+            "</div>"
+        )
+          .arg(item.name)
+          .arg(iconColor.name())
+          .arg(pinnedText)
+          .arg(formattedDate)
+          .arg(item.command.toHtmlEscaped().replace("\n", "<br/>"));
+        
+        listItem->setToolTip(tooltip);
+        
+        commandsList->addItem(listItem);
+    }
+}
+
+void CommandsMenuDialog::onSearchTextChanged(const QString &text) {
+    currentSearchText = text;
+    updateCommandsList();
+}
+
+void CommandsMenuDialog::onSortChanged(int index) {
+    currentSortMode = static_cast<SortMode>(sortCombo->itemData(index).toInt());
+    updateCommandsList();
+}
+
+void CommandsMenuDialog::onPinToggle() {
+    QListWidgetItem *currentItem = commandsList->currentItem();
+    if (!currentItem) {
+        QMessageBox::warning(this, tr("No Selection"), tr("Please select a command to pin / unpin."));
+        return;
+    }
+    
+    QString commandName = currentItem->text();
+    togglePin(commandName);
+    updateCommandsList();
+    
+    // Reselect the item
+    for (int i = 0; i < commandsList->count(); ++i) {
+        if (commandsList->item(i)->text().contains(commandName)) {
+            commandsList->setCurrentRow(i);
+            break;
+        }
+    }
+}
+
+void CommandsMenuDialog::togglePin(const QString &commandName) {
+    QJsonObject commands = loadCommandsFromJson();
+    
+    if (commands.contains(commandName)) {
+        QJsonObject commandData = commands[commandName].toObject();
+        bool currentlyPinned = commandData.contains("pinned") ? commandData.value("pinned").toBool() : false;
+        commandData["pinned"] = !currentlyPinned;
+        commands[commandName] = commandData;
+        saveCommandsToJson(commands);
+
+        // Refresh all commands menu after pin or unpin
+        SettingsManager::instance()->commandsChanged();
     }
 }
 
@@ -1026,13 +1258,23 @@ void CommandsMenuDialog::onCommandSelected() {
     
     if (commands.contains(commandName)) {
         QJsonObject commandData = commands[commandName].toObject();
-        
+
+        // Update last opened timestamp with CURRENT time
+        commandData["lastOpened"] = QDateTime::currentMSecsSinceEpoch();
+        commands[commandName] = commandData;
+        saveCommandsToJson(commands);
+
         MainWindow *newWindow = new MainWindow();
         newWindow->setAttribute(Qt::WA_DeleteOnClose);
         newWindow->setCurrentCommandName(commandName);
         MainWindow::openedCommands.insert(commandName);
         newWindow->loadCommand(commandData);
         newWindow->show();
+        
+        // Refresh list to show updated order if sorted by recently opened
+        if (currentSortMode == SortByRecentlyOpened) {
+            refreshCommandsList();
+        }
     }
 }
 
@@ -1052,8 +1294,13 @@ void CommandsMenuDialog::onDeleteCommand() {
     
     if (reply == QMessageBox::Yes) {
         QJsonObject commands = loadCommandsFromJson();
+
         commands.remove(commandName);
         saveCommandsToJson(commands);
+
+        // Emit signal to refresh all open command menus
+        SettingsManager::instance()->commandsChanged();
+
         refreshCommandsList();
         QMessageBox::information(this, tr("Command Deleted"), 
                                 QString(tr("Command '%1' has been deleted.")).arg(commandName));
@@ -1132,7 +1379,18 @@ void CommandsMenuDialog::onRunCommand() {
     
     if (commands.contains(commandName)) {
         QJsonObject commandData = commands[commandName].toObject();
+
+        // Update last opened timestamp with current time
+        commandData["lastOpened"] = QDateTime::currentMSecsSinceEpoch();
+        commands[commandName] = commandData;
+        saveCommandsToJson(commands);
+
         executeCommand(commandData);
+
+        // Refresh list to show order if sorted by recently opened is selected
+        if (currentSortMode == SortByRecentlyOpened) {
+            refreshCommandsList();
+        }
     }
 }
 

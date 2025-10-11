@@ -7,6 +7,7 @@
 #include <QString>
 #include <QFont>
 #include <QWidget>
+#include <QDebug>
 
 class SettingsManager : public QObject {
     Q_OBJECT
@@ -114,6 +115,7 @@ signals:
     void themeChanged(Theme theme);
     void fontChanged();
     void shortcutsChanged();
+    void commandsChanged();
 
 private:
     explicit SettingsManager(QObject* parent = nullptr);

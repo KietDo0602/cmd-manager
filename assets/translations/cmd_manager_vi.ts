@@ -728,6 +728,30 @@
         <translation>Các Lệnh Đã Lưu:</translation>
     </message>
     <message>
+        <source>Search:</source>
+        <translation>Tìm Kiếm:</translation>
+    </message>
+    <message>
+        <source>Search Commands...</source>
+        <translation>Tìm Lệnh...</translation>
+    </message>
+    <message>
+        <source>Sort By:</source>
+        <translation>Sắp Xếp Theo:</translation>
+    </message>
+    <message>
+        <source>Name</source>
+        <translation>Tên</translation>
+    </message>
+    <message>
+        <source>Recently Opened</source>
+        <translation>Mở Gần Đây</translation>
+    </message>
+    <message>
+        <source>Pin/Unpin</source>
+        <translation>Ghim/Bỏ Ghim</translation>
+    </message>
+    <message>
         <source>New</source>
         <translation>Tạo Lệnh Mới</translation>
     </message>
@@ -782,6 +806,10 @@
     <message>
         <source>Please select a command to run.</source>
         <translation>Hãy chọn một lệnh để chạy.</translation>
+    </message>
+    <message>
+        <source>Please select a command to pin / unpin.</source>
+        <translation>Hãy chọn một lệnh để ghim / bỏ ghim.</translation>
     </message>
     <message>
         <source>Empty Command</source>
