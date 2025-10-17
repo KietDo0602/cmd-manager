@@ -217,27 +217,27 @@
     </message>
     <message>
       <source>Choose File</source>
-      <translation>Loại Tệp</translation>
+      <translation>Chọn Tệp</translation>
     </message>
     <message>
       <source>Type:</source>
-      <translation>Chọn tệp</translation>
+      <translation>Chọn Tệp</translation>
     </message>
     <message>
       <source>Clear File</source>
-      <translation>Xóa tệp</translation>
+      <translation>Xóa Tệp</translation>
     </message>
     <message>
       <source>Create File</source>
-      <translation>Tạo tệp</translation>
+      <translation>Tạo Tệp</translation>
     </message>
     <message>
       <source>Choose Input File</source>
-      <translation>Chọn tệp đầu vào</translation>
+      <translation>Chọn Tệp Đầu Vào</translation>
     </message>
     <message>
       <source>Create Output File</source>
-      <translation>Tạo tệp đầu ra</translation>
+      <translation>Tạo Tệp Đầu Ra</translation>
     </message>
     <message>
         <source>Cancel</source>

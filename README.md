@@ -31,9 +31,9 @@ Available in 6 languages:
 2. How to use:
    - Enter the **Command String** (e.g., `echo "Hello World"`).  
    - (Optional) Choose a **Working Directory** (This is the folder where the command will be executed).  
-   - Click **Start** to process the **Command String**
+   - Click **Validate** to validate and process the **Command String**
    - (Optional) Replace **placeholder file** inside the command, using **Choose File** or **Create File**. Make sure the placeholder has the correct type (input or output)
-   - Press **Execute** to run the command.
+   - Press **Run Command** to run the command.
 3. Press **Save** to store your commands in a JSON file and type in a name.
 4. Use **All Commands** to find previously saved commands.
 5. Set a **Current Directory** if needed for execution - this is where the command will be executed.  
@@ -137,7 +137,7 @@ Make sure to list any OS-specific problems inside the branch name or description
 - [x] Search for Commands Menu
 - [x] Sort by File name / Recently Opened
 - [x] Pinned command - will go to the top
-- [ ] Drag and Drop Support
+- [x] Drag and Drop Support
 - [ ] Command Validation and Preview
 - [ ] Release 1.0 version
 

@@ -1010,7 +1010,9 @@ CommandsMenuDialog::CommandsMenuDialog(QWidget *parent)
     
     commandsList = new QListWidget(this);
     layout->addWidget(new QLabel(tr("Saved Commands:")));
-    commandsList->setAlternatingRowColors(true);
+    commandsList->setAlternatingRowColors(false);
+    commandsList->setMouseTracking(true);
+    commandsList->viewport()->installEventFilter(this);
     layout->addWidget(commandsList, 1);
 
     // Buttons
@@ -1347,24 +1349,51 @@ void MainWindow::onSettingsClicked() {
 }
 
 void MainWindow::applyThemeAndFont() {
-    SettingsManager* settings = SettingsManager::instance();
+    SettingsManager* settingsManager = SettingsManager::instance();
     
-    // Apply theme stylesheet to this window
-    QString currentStyleSheet = settings->getCurrentThemeStyleSheet();
+    // Get current theme stylesheet
+    QString currentStyleSheet = settingsManager->getCurrentThemeStyleSheet();
+    
+    // Apply stylesheet to main window
+    setStyleSheet("");  // Clear first
     setStyleSheet(currentStyleSheet);
     
-    // Apply font to this window and all children
-    QFont appFont(settings->getFontFamily(), settings->getFontSize());
+    // Apply font
+    QFont appFont(settingsManager->getFontFamily(), settingsManager->getFontSize());
     setFont(appFont);
     
-    // Apply to all child widgets
+    // Explicitly apply stylesheet to Files group and all FileRowWidgets
+    if (filesGroup) {
+        filesGroup->setStyleSheet("");  // Clear
+        filesGroup->setStyleSheet(currentStyleSheet);  // Reapply
+        filesGroup->setFont(appFont);
+    }
+    
+    for (FileRowWidget *row : fileRows) {
+        if (row) {
+            row->setStyleSheet("");  // Clear
+            row->setStyleSheet(currentStyleSheet);  // Reapply
+            row->setFont(appFont);
+            
+            // Apply to all children of FileRowWidget
+            QList<QWidget*> rowChildren = row->findChildren<QWidget*>();
+            for (QWidget* child : rowChildren) {
+                child->setStyleSheet("");
+                child->setStyleSheet(currentStyleSheet);
+                child->setFont(appFont);
+            }
+        }
+    }
+    
+    // Force update all widgets
     QList<QWidget*> widgets = findChildren<QWidget*>();
     for (QWidget* widget : widgets) {
         widget->setFont(appFont);
+        widget->update();
     }
     
-    // Apply theme to all other top-level windows
-    settings->applyThemeToAllWindows();
+    // Update entire window
+    update();
 }
 
 void CommandsMenuDialog::onRunCommand() {

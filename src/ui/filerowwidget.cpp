@@ -5,11 +5,23 @@
 FileRowWidget::FileRowWidget(const QString &placeholder, QWidget *parent)
     : QWidget(parent), placeholderFile(placeholder) {
 
+    setAttribute(Qt::WA_StyledBackground, true);
+    setAttribute(Qt::WA_Hover, true);
+    setMouseTracking(true);
+
+    // Set focus policy so widget can receive events
+    setFocusPolicy(Qt::StrongFocus);
+
     fileLabel = new QLabel(">> " + placeholder, this);
+
     roleCombo = new QComboBox(this);
-    roleCombo->addItems({tr("Input"), tr("Output")});
+
+    // Store untranslated values as item data
+    roleCombo->addItem(tr("Input"), "input");
+    roleCombo->addItem(tr("Output"), "output");
 
     actionButton = new QPushButton(tr("Choose File"), this);
+
     clearButton = new QPushButton(tr("Clear File"), this);
     clearButton->hide();
 
@@ -23,18 +35,27 @@ FileRowWidget::FileRowWidget(const QString &placeholder, QWidget *parent)
 
     setLayout(layout);
 
+    connect(roleCombo, QOverload<int>::of(&QComboBox::currentIndexChanged), this, [this](int index) {
+        QString role = roleCombo->itemData(index).toString();
+        onRoleChanged(role);
+    });
+
     connect(roleCombo, &QComboBox::currentTextChanged, this, [this](const QString &role) {
-        actionButton->setText(role == tr("Input") ? tr("Choose File") : tr("Create File"));
+        actionButton->setText(role == "input" ? tr("Choose File") : tr("Create File"));
     });
 
     connect(actionButton, &QPushButton::clicked, this, [this]() {
-        if (roleCombo->currentText() == tr("Input"))
+        QString role = roleCombo->currentData().toString();
+        if (role == "input")
             onChooseFile();
         else
             onCreateFile();
     });
 
     connect(clearButton, &QPushButton::clicked, this, &FileRowWidget::onClearFile);
+
+    // Enable drag and drop
+    setAcceptDrops(true);
 }
 
 void FileRowWidget::onChooseFile() {
@@ -74,3 +95,109 @@ void FileRowWidget::updateUI() {
         fileLabel->setWordWrap(true);
     }
 }
+
+void FileRowWidget::onRoleChanged(const QString &role) {
+    actionButton->setText(role == "input" ? tr("Choose File") : tr("Create File"));
+    
+    // Enable/disable drag and drop based on role
+    if (role == "input") {
+        setAcceptDrops(true);
+        setToolTip("Drag and drop files here or click 'Choose File'");
+    } else {
+        setAcceptDrops(false);
+        setToolTip("");
+    }
+}
+
+
+void FileRowWidget::dropEvent(QDropEvent *event) {
+    // Only accept drops for Input type
+    if (roleCombo->currentData().toString() != "input") {
+        event->ignore();
+        return;
+    }
+
+    if (event->mimeData()->hasUrls()) {
+        const QList<QUrl> urls = event->mimeData()->urls();
+        for (const QUrl &url : urls) {
+            if (url.isLocalFile()) {
+                QString filePath = url.toLocalFile();
+                QFileInfo fileInfo(filePath);
+
+                if (fileInfo.exists() && fileInfo.isFile()) {
+                    selectedFile = filePath;
+                    updateUI();
+                    emit fileChanged();
+                    event->acceptProposedAction();
+                    return;
+                }
+            }
+        }
+    }
+
+    event->ignore();
+}
+
+void FileRowWidget::dragEnterEvent(QDragEnterEvent *event) {
+    // Only accept drops for Input type
+    if (roleCombo->currentData().toString() != "input") {
+        event->ignore();
+        return;
+    }
+
+    // Accept if drag contains at least one local file
+    if (event->mimeData()->hasUrls()) {
+        const QList<QUrl> urls = event->mimeData()->urls();
+        for (const QUrl &url : urls) {
+            if (url.isLocalFile()) {
+                event->acceptProposedAction();
+                return;
+            }
+        }
+    }
+
+    event->ignore();
+}
+
+
+
+void FileRowWidget::setFileFromPath(const QString &filePath) {
+    QFileInfo fileInfo(filePath);
+    
+    // Check if file exists
+    if (!fileInfo.exists()) {
+        return;
+    }
+    
+    // Check if it's a file (not a directory)
+    if (!fileInfo.isFile()) {
+        return;
+    }
+    
+    selectedFile = filePath;
+    updateUI();
+    emit fileChanged();
+}
+
+void FileRowWidget::setRole(const QString &role) {
+    if (role == "input") {
+        roleCombo->setCurrentIndex(0);
+    } else {
+        roleCombo->setCurrentIndex(1);
+    }
+}
+
+void FileRowWidget::forceStyleUpdate() {
+    // Force style update for this widget and all children
+    style()->unpolish(this);
+    style()->polish(this);
+    update();
+    
+    QList<QWidget*> children = findChildren<QWidget*>();
+    for (QWidget* child : children) {
+        child->style()->unpolish(child);
+        child->style()->polish(child);
+        child->update();
+    }
+}
+

@@ -141,6 +141,7 @@ class MainWindow : public QMainWindow
         QString getConfigFilePath();
         void parseCommandForFiles(const QString &cmd);
         QString buildFinalCommand() const;
+
         void clearDynamicButtons();
         void clearCommandsInternal(); // Clear without confirmation dialog
         void updateDirectoryButton(); // Update directory button text
