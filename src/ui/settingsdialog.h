@@ -84,6 +84,7 @@ private:
     QCheckBox* m_instantRunCheck;
     QCheckBox* m_autoCloseTerminalCheck;
     QCheckBox* m_playCompletionSoundCheck;
+    QCheckBox* m_showCommandPreviewCheck;
     QComboBox* m_terminalColorSchemeCombo;
     QFontComboBox* m_terminalFontCombo;
     QSpinBox* m_terminalFontSizeSpin;

@@ -855,6 +855,14 @@ void SettingsManager::setPlayCompletionSound(bool play) {
     m_settings->setValue("terminal/playCompletionSound", play);
 }
 
+bool SettingsManager::getShowCommandPreview() const {
+    return m_settings->value("terminal/showCommandPreview", true).toBool();
+}
+
+void SettingsManager::setShowCommandPreview(bool show) {
+    m_settings->setValue("terminal/showCommandPreview", show);
+}
+
 SettingsManager::TerminalColorScheme SettingsManager::getTerminalColorScheme() const {
     return static_cast<TerminalColorScheme>(m_settings->value("terminal/colorScheme", NeonGreen).toInt());
 }

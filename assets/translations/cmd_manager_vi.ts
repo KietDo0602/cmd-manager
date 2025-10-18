@@ -203,6 +203,38 @@
         <source>Clear Commands</source>
         <translation>Xóa nội dung trong vùng văn bản</translation>
     </message>
+    <message>
+        <source>Command Preview</source>
+        <translation>Xem Trước Lệnh</translation>
+    </message>
+    <message>
+        <source>Execute</source>
+        <translation>Chạy Lệnh</translation>
+    </message>
+    <message>
+        <source>Working Directory:</source>
+        <translation>Thư Mục: </translation>
+    </message>
+    <message>
+        <source>Command to Execute:</source>
+        <translation>Lệnh Để Chạy:</translation>
+    </message>
+    <message>
+        <source>Warning: Potentially Dangerous Command Detected!</source>
+        <translation>Lưu Ý: Lệnh có khả năng nguy hiểm, hãy lưu ý trước khi chạy!</translation>
+    </message>
+    <message>
+        <source>Detected dangerous operations:</source>
+        <translation>Phát Hiện Lệnh Nguy Hiểm:</translation>
+    </message>
+    <message>
+        <source>Please review the command carefully before executing.</source>
+        <translation>Hãy xem xét kỹ lệnh trước khi chạy lệnh.</translation>
+    </message>
+    <message>
+        <source>No obvious dangerous commands detected</source>
+        <translation>Không phát hiện lệnh nguy hiểm nào</translation>
+    </message>
 </context>
 
 <context>
@@ -252,12 +284,20 @@
       <translation>Hiển thị thông tin lệnh trước khi thực thi</translation>
     </message>
     <message>
-      <source>When enabled, displays working directory, command, and separator before execution</source>
-      <translation>Khi bật, hiển thị thư mục làm việc, lệnh và dấu phân cách trước khi thực thi</translation>
+      <source>When enabled, displays working directory, command, and separator inside terminal right before execution</source>
+      <translation>Khi bật, sẽ hiển thị thư mục làm việc, lệnh và dấu phân cách ở trong terminal trước khi thực thi</translation>
     </message>
     <message>
       <source>Execution Options</source>
       <translation>Tùy chọn thực thi</translation>
+    </message>
+    <message>
+      <source>Show command preview before execution</source>
+      <translation>Hiển thị xem trước lệnh trước khi thực thi</translation>
+    </message>
+    <message>
+      <source>When enabled, shows a preview dialog with the full command and dangerous command warnings before execution</source>
+      <translation>Khi bật, sẽ hiển thị hộp thoại xem trước với toàn bộ lệnh và cảnh báo về các lệnh nguy hiểm trước khi thực thi</translation>
     </message>
     <message>
       <source>Automatically close terminal when command finishes</source>

@@ -235,6 +235,7 @@ void SettingsDialog::loadSettings() {
 
     // Terminal
     m_showCommandLabelCheck->setChecked(m_settings->getShowCommandLabel());
+    m_showCommandPreviewCheck->setChecked(m_settings->getShowCommandPreview());
     m_instantRunCheck->setChecked(m_settings->getInstantRunFromMenu());
     m_autoCloseTerminalCheck->setChecked(m_settings->getAutoCloseTerminal());
     m_playCompletionSoundCheck->setChecked(m_settings->getPlayCompletionSound());
@@ -322,6 +323,7 @@ void SettingsDialog::applySettings() {
 
     // Terminal
     m_settings->setShowCommandLabel(m_showCommandLabelCheck->isChecked());
+    m_settings->setShowCommandPreview(m_showCommandPreviewCheck->isChecked());
     m_settings->setInstantRunFromMenu(m_instantRunCheck->isChecked());
     m_settings->setAutoCloseTerminal(m_autoCloseTerminalCheck->isChecked());
     m_settings->setPlayCompletionSound(m_playCompletionSoundCheck->isChecked());
@@ -388,6 +390,7 @@ void SettingsDialog::onRestoreDefaultsClicked() {
         m_openCommandsEdit->setKeySequence(QKeySequence("Ctrl+O"));
         m_startExecuteEdit->setKeySequence(QKeySequence("F5")); 
         m_showCommandLabelCheck->setChecked(true);
+        m_showCommandPreviewCheck->setChecked(true);
         m_instantRunCheck->setChecked(true);
         m_autoCloseTerminalCheck->setChecked(false);
 
@@ -410,7 +413,7 @@ void SettingsDialog::setupTerminalTab() {
     QVBoxLayout* displayLayout = new QVBoxLayout(displayGroup);
     
     m_showCommandLabelCheck = new QCheckBox(tr("Show command information before execution"));
-    m_showCommandLabelCheck->setToolTip(tr("When enabled, displays working directory, command, and separator before execution"));
+    m_showCommandLabelCheck->setToolTip(tr("When enabled, displays working directory, command, and separator inside terminal right before execution"));
     displayLayout->addWidget(m_showCommandLabelCheck);
     
     displayLayout->addStretch();
@@ -418,6 +421,10 @@ void SettingsDialog::setupTerminalTab() {
     
     QGroupBox* executionGroup = new QGroupBox(tr("Execution Options"));
     QVBoxLayout* executionLayout = new QVBoxLayout(executionGroup);
+
+    m_showCommandPreviewCheck = new QCheckBox(tr("Show command preview before execution"));
+    m_showCommandPreviewCheck->setToolTip(tr("When enabled, shows a preview dialog with the full command and dangerous command warnings before execution"));
+    executionLayout->addWidget(m_showCommandPreviewCheck);
 
     m_autoCloseTerminalCheck = new QCheckBox(tr("Automatically close terminal when command finishes"));
     m_autoCloseTerminalCheck->setToolTip(tr("When enabled, terminal window closes automatically after command execution completes"));

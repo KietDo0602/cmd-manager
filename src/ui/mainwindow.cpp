@@ -805,7 +805,15 @@ void MainWindow::onStartClicked() {
 }
 
 void MainWindow::onExecuteClicked() {
-    QString finalCmd = commandTemplate;
+    QString finalCmd = buildFinalCommand();
+
+    // Show command preview if enabled in settings
+    if (SettingsManager::instance()->getShowCommandPreview()) {
+        if (!showCommandPreview(finalCmd)) {
+            // User cancelled
+            return;
+        }
+    }
     
     // Replace placeholders with properly quoted file paths
     for (FileRowWidget *row : fileRows) {
@@ -827,10 +835,12 @@ void MainWindow::onExecuteClicked() {
     QTextEdit *output = new QTextEdit();
     output->setReadOnly(true);
 
-    // Apply terminal settings
     SettingsManager* settings = SettingsManager::instance();
+    QString currentStyleSheet = settings->getCurrentThemeStyleSheet();
+    terminal->setStyleSheet(currentStyleSheet);
+
+    // Apply terminal settings
     QPair<QColor, QColor> colors = SettingsManager::getTerminalColors(settings->getTerminalColorScheme());
-    
     QString terminalStyle = QString(
         "QTextEdit { "
         "background-color: %1; "
@@ -947,13 +957,198 @@ void MainWindow::parseCommandForFiles(const QString &cmd) {
 }
 
 QString MainWindow::buildFinalCommand() const {
-    QString cmd = commandEdit->toPlainText();
-    for (const auto &ph : placeholders) {
-        QString replacement = ph.chosenPath.isEmpty() ? ph.original : ph.chosenPath;
-        QString quoted = "\"" + replacement + "\"";
-        cmd.replace(ph.original, quoted);
+    QString finalCmd = commandTemplate;
+
+    // Replace placeholders with properly quoted file paths
+    for (FileRowWidget *row : fileRows) {
+        if (!row->getSelectedFile().isEmpty()) {
+            QString filePath = row->getSelectedFile();
+            // Escape any single quotes in the file path and wrap in single quotes
+            filePath.replace("'", "'\"'\"'");
+            QString quotedPath = "'" + filePath + "'";
+            finalCmd.replace(row->getPlaceholder(), quotedPath);
+        }
     }
-    return cmd;
+    
+    return finalCmd;
+}
+
+bool MainWindow::containsDangerousCommands(const QString &command) const {
+    QStringList dangerousPatterns = {
+        "rm ", "rm\t", "rm\n",
+        "rmdir ", "rmdir\t",
+        "dd ", "dd\t",
+        "mkfs", 
+        "format",
+        ":(){:|:&};:",  // Fork bomb
+        "chmod -R 777",
+        "chmod 777",
+        "> /dev/",
+        "mv ", "mv\t",  // Moving files can be dangerous
+        "shred",
+        "wipefs",
+        "fdisk",
+        "parted",
+        "shutdown",
+        "reboot",
+        "init 0",
+        "init 6",
+        "kill -9",
+        "killall",
+        "pkill"
+    };
+    
+    QString lowerCmd = command.toLower();
+    
+    for (const QString &pattern : dangerousPatterns) {
+        if (lowerCmd.contains(pattern.toLower())) {
+            return true;
+        }
+    }
+    
+    return false;
+}
+
+QStringList MainWindow::getDangerousCommands(const QString &command) const {
+    QStringList dangerous;
+    QStringList dangerousPatterns = {
+        "rm", "rmdir", "dd", "mkfs", "format", "fork bomb",
+        "chmod 777", "mv", "shred", "wipefs", "fdisk", "parted",
+        "shutdown", "reboot", "init", "kill", "killall", "pkill"
+    };
+    
+    QString lowerCmd = command.toLower();
+    
+    QMap<QString, QString> patternMap;
+    patternMap["rm "] = "rm (delete files/directories)";
+    patternMap["rmdir "] = "rmdir (remove directories)";
+    patternMap["dd "] = "dd (disk write - can destroy data)";
+    patternMap["mkfs"] = "mkfs (format filesystem)";
+    patternMap["format"] = "format (format disk)";
+    patternMap[":(){:|:&};:"] = "Fork bomb (system crash)";
+    patternMap["chmod -r 777"] = "chmod 777 (dangerous permissions)";
+    patternMap["chmod 777"] = "chmod 777 (dangerous permissions)";
+    patternMap["> /dev/"] = "Writing to device files";
+    patternMap["mv "] = "mv (move/rename files)";
+    patternMap["shred"] = "shred (secure delete)";
+    patternMap["wipefs"] = "wipefs (erase filesystem signatures)";
+    patternMap["fdisk"] = "fdisk (partition editor)";
+    patternMap["parted"] = "parted (partition editor)";
+    patternMap["shutdown"] = "shutdown (system shutdown)";
+    patternMap["reboot"] = "reboot (system restart)";
+    patternMap["init 0"] = "init 0 (system shutdown)";
+    patternMap["init 6"] = "init 6 (system reboot)";
+    patternMap["kill -9"] = "kill -9 (force kill process)";
+    patternMap["killall"] = "killall (kill all processes by name)";
+    patternMap["pkill"] = "pkill (kill processes by pattern)";
+    
+    for (auto it = patternMap.begin(); it != patternMap.end(); ++it) {
+        if (lowerCmd.contains(it.key().toLower())) {
+            if (!dangerous.contains(it.value())) {
+                dangerous.append(it.value());
+            }
+        }
+    }
+    
+    return dangerous;
+}
+
+bool MainWindow::showCommandPreview(const QString &command) {
+    QDialog *previewDialog = new QDialog(this);
+    previewDialog->setWindowTitle(tr("Command Preview"));
+    previewDialog->setModal(true);
+    previewDialog->resize(600, 400);
+    
+    QVBoxLayout *layout = new QVBoxLayout(previewDialog);
+    
+    // Check for dangerous commands
+    bool isDangerous = containsDangerousCommands(command);
+    QStringList dangerousCmds = getDangerousCommands(command);
+    
+    if (isDangerous) {
+        QLabel *warningIcon = new QLabel();
+        warningIcon->setPixmap(style()->standardPixmap(QStyle::SP_MessageBoxWarning).scaled(32, 32, Qt::KeepAspectRatio, Qt::SmoothTransformation));
+
+        QString warningLabelStr = QString("<b>⚠ %1</b>")
+          .arg(tr("Warning: Potentially Dangerous Command Detected!"));
+        
+        QLabel *warningLabel = new QLabel(warningLabelStr);
+        warningLabel->setStyleSheet("QLabel { color: #ff6b6b; font-size: 14pt; }");
+        
+        QHBoxLayout *warningLayout = new QHBoxLayout();
+        warningLayout->addWidget(warningIcon);
+        warningLayout->addWidget(warningLabel);
+        warningLayout->addStretch();
+        
+        layout->addLayout(warningLayout);
+
+        QString dangerousLabelStr = QString("<b>%1</b>").arg(tr("Detected dangerous operations:"));
+        
+        QLabel *dangerousLabel = new QLabel(dangerousLabelStr);
+        layout->addWidget(dangerousLabel);
+        
+        QTextEdit *dangerousList = new QTextEdit();
+        dangerousList->setReadOnly(true);
+        dangerousList->setMaximumHeight(80);
+        dangerousList->setText("• " + dangerousCmds.join("\n• "));
+        layout->addWidget(dangerousList);
+        
+        QLabel *cautionLabel = new QLabel(tr("Please review the command carefully before executing."));
+        cautionLabel->setStyleSheet("QLabel { color: #ff6b6b; font-style: italic; }");
+        layout->addWidget(cautionLabel);
+    } else {
+        QString safeLabelStr = QString("✓ %1").arg(tr("No obvious dangerous commands detected"));
+        QLabel *safeLabel = new QLabel(safeLabelStr);
+        safeLabel->setStyleSheet("QLabel { color: #51cf66; font-weight: bold; }");
+        layout->addWidget(safeLabel);
+    }
+    
+    // Working directory
+    QString dirLabelStr = QString("<b>%1</b>").arg(tr("Working Directory:"));
+    QLabel *dirLabel = new QLabel(dirLabelStr);
+    layout->addWidget(dirLabel);
+    
+    QString workingDir = currentDir.isEmpty() ? QDir::homePath() : currentDir;
+    QLineEdit *dirEdit = new QLineEdit(workingDir);
+    dirEdit->setReadOnly(true);
+    layout->addWidget(dirEdit);
+    
+    // Command preview
+    QString cmdLabelStr = QString("<b>%1</b>").arg(tr("Command to Execute:"));
+    QLabel *cmdLabel = new QLabel(cmdLabelStr);
+    layout->addWidget(cmdLabel);
+    
+    QTextEdit *commandPreview = new QTextEdit();
+    commandPreview->setReadOnly(true);
+    commandPreview->setPlainText(command);
+    commandPreview->setFont(QFont("Courier", 10));
+    layout->addWidget(commandPreview);
+    
+    // Buttons
+    QHBoxLayout *buttonLayout = new QHBoxLayout();
+    
+    QPushButton *executeBtn = new QPushButton(tr("Execute"));
+    QPushButton *cancelBtn = new QPushButton(tr("Cancel"));
+    
+    if (isDangerous) {
+        executeBtn->setStyleSheet("QPushButton { background-color: #ff6b6b; color: white; font-weight: bold; }");
+    } else {
+        executeBtn->setStyleSheet("QPushButton { background-color: #51cf66; color: white; font-weight: bold; }");
+    }
+    
+    buttonLayout->addStretch();
+    buttonLayout->addWidget(cancelBtn);
+    buttonLayout->addWidget(executeBtn);
+    
+    layout->addLayout(buttonLayout);
+    
+    connect(executeBtn, &QPushButton::clicked, previewDialog, &QDialog::accept);
+    connect(cancelBtn, &QPushButton::clicked, previewDialog, &QDialog::reject);
+    
+    int result = previewDialog->exec();
+    previewDialog->deleteLater();
+    
+    return result == QDialog::Accepted;
 }
 
 void MainWindow::clearDynamicButtons() {
@@ -1437,7 +1632,7 @@ void CommandsMenuDialog::executeCommand(const QJsonObject &commandData) {
     if (SettingsManager::instance()->getInstantRunFromMenu()) {
         // Instant run: use saved file paths directly
         QString finalCmd = command;
-        
+
         // Replace placeholders with saved file paths
         for (int i = 0; i < filesArray.size(); ++i) {
             QJsonObject fileData = filesArray[i].toObject();
@@ -1462,8 +1657,11 @@ void CommandsMenuDialog::executeCommand(const QJsonObject &commandData) {
         QTextEdit *output = new QTextEdit();
         output->setReadOnly(true);
 
-        // Apply terminal settings
         SettingsManager* settings = SettingsManager::instance();
+        QString currentStyleSheet = settings->getCurrentThemeStyleSheet();
+        terminal->setStyleSheet(currentStyleSheet);
+
+        // Apply terminal settings
         QPair<QColor, QColor> colors = SettingsManager::getTerminalColors(settings->getTerminalColorScheme());
         
         QString terminalStyle = QString(
@@ -1610,7 +1808,7 @@ void CommandsMenuDialog::executeCommand(const QJsonObject &commandData) {
     connect(executeBtn, &QPushButton::clicked, [=]() {
         // Build the final command with file substitutions
         QString finalCmd = command;
-        
+
         // Replace placeholders with properly quoted file paths
         for (FileRowWidget *row : fileRows) {
             if (!row->getSelectedFile().isEmpty()) {
@@ -1634,8 +1832,11 @@ void CommandsMenuDialog::executeCommand(const QJsonObject &commandData) {
         QTextEdit *output = new QTextEdit();
         output->setReadOnly(true);
 
-        // Apply terminal settings
         SettingsManager* settings = SettingsManager::instance();
+        QString currentStyleSheet = settings->getCurrentThemeStyleSheet();
+        terminal->setStyleSheet(currentStyleSheet);
+        
+        // Apply terminal settings
         QPair<QColor, QColor> colors = SettingsManager::getTerminalColors(settings->getTerminalColorScheme());
         
         QString terminalStyle = QString(

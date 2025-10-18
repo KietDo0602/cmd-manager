@@ -141,6 +141,10 @@ class MainWindow : public QMainWindow
         QString getConfigFilePath();
         void parseCommandForFiles(const QString &cmd);
         QString buildFinalCommand() const;
+        bool containsDangerousCommands(const QString &command) const;
+        QStringList getDangerousCommands(const QString &command) const;
+        bool showCommandPreview(const QString &command);
+
 
         void clearDynamicButtons();
         void clearCommandsInternal(); // Clear without confirmation dialog

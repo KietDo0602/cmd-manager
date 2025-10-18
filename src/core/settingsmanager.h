@@ -100,6 +100,9 @@ public:
     bool getPlayCompletionSound() const;
     void setPlayCompletionSound(bool play);
 
+    bool getShowCommandPreview() const;
+    void setShowCommandPreview(bool show);
+
     TerminalColorScheme getTerminalColorScheme() const;
     void setTerminalColorScheme(TerminalColorScheme scheme);
     

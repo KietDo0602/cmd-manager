@@ -138,7 +138,7 @@ Make sure to list any OS-specific problems inside the branch name or description
 - [x] Sort by File name / Recently Opened
 - [x] Pinned command - will go to the top
 - [x] Drag and Drop Support
-- [ ] Command Validation and Preview
+- [x] Command Validation and Preview
 - [ ] Release 1.0 version
 
 
