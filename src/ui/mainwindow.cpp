@@ -864,7 +864,7 @@ void MainWindow::onExecuteClicked() {
     QString workingDir = currentDir.isEmpty() ? QDir::homePath() : currentDir;
     if (SettingsManager::instance()->getShowCommandLabel()) {
         output->append(tr("Working Directory: ") + workingDir);
-        output->append(tr("Executing command:"));
+        output->append(tr("Executing Command:"));
         output->append(finalCmd);
         output->append(tr("======================= START COMMAND ======================="));
     }
@@ -1688,7 +1688,7 @@ void CommandsMenuDialog::executeCommand(const QJsonObject &commandData) {
         QString workingDir = directory.isEmpty() ? QDir::homePath() : directory;
         if (SettingsManager::instance()->getShowCommandLabel()) {
             output->append(tr("Working Directory: ") + workingDir);
-            output->append(tr("Executing command:"));
+            output->append(tr("Executing Command:"));
             output->append(finalCmd);
             output->append(tr("======================= START COMMAND ======================="));
         }
@@ -1863,7 +1863,7 @@ void CommandsMenuDialog::executeCommand(const QJsonObject &commandData) {
         QString workingDir = directory.isEmpty() ? QDir::homePath() : directory;
         if (SettingsManager::instance()->getShowCommandLabel()) {
             output->append(tr("Working Directory: ") + workingDir);
-            output->append(tr("Executing command:"));
+            output->append(tr("Executing Command:"));
             output->append(finalCmd);
             output->append(tr("======================= START COMMAND ======================="));
         }

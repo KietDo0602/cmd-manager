@@ -88,7 +88,7 @@
         <translation>Thư Mục: </translation>
     </message>
     <message>
-        <source>Executing Command: </source>
+        <source>Executing Command:</source>
         <translation>Chạy Lệnh: </translation>
     </message>
     <message>
@@ -868,7 +868,7 @@
         <translation>Thư Mục: </translation>
     </message>
     <message>
-        <source>Executing Command: </source>
+        <source>Executing Command:</source>
         <translation>Chạy Lệnh: </translation>
     </message>
     <message>
