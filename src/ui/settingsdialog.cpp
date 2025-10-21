@@ -412,7 +412,7 @@ void SettingsDialog::setupTerminalTab() {
     QGroupBox* displayGroup = new QGroupBox(tr("Display Options"));
     QVBoxLayout* displayLayout = new QVBoxLayout(displayGroup);
     
-    m_showCommandLabelCheck = new QCheckBox(tr("Show command information before execution"));
+    m_showCommandLabelCheck = new QCheckBox(tr("Show command information and text overlay inside terminal"));
     m_showCommandLabelCheck->setToolTip(tr("When enabled, displays working directory, command, and separator inside terminal right before execution"));
     displayLayout->addWidget(m_showCommandLabelCheck);
     

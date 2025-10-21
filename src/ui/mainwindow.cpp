@@ -1,7 +1,10 @@
 #include "mainwindow.h"
 
-// Initialize static member
+
+// Track already opened commands and command menu
 QSet<QString> MainWindow::openedCommands;
+CommandsMenuDialog* MainWindow::activeCommandsMenu = nullptr;
+
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), process(new QProcess(this)), hasAnyChanges(false) {
@@ -374,9 +377,27 @@ void MainWindow::onSaveClicked() {
 }
 
 void MainWindow::onAllCommandsClicked() {
+    // Check if there's already an active commands menu
+    if (activeCommandsMenu) {
+        // If it exists, bring it to focus
+        activeCommandsMenu->show();
+        activeCommandsMenu->raise();
+        activeCommandsMenu->activateWindow();
+        return;
+    }
+    
+    // Create new commands menu
     CommandsMenuDialog *dialog = new CommandsMenuDialog(nullptr);
     dialog->setAttribute(Qt::WA_DeleteOnClose);
-    dialog->updateCommandsList();
+    
+    // Store reference to active menu
+    activeCommandsMenu = dialog;
+    
+    // Clear reference when dialog is destroyed
+    connect(dialog, &QObject::destroyed, []() {
+        activeCommandsMenu = nullptr;
+    });
+    
     dialog->show();
 }
 
@@ -1355,8 +1376,26 @@ void CommandsMenuDialog::updateCommandsList() {
 
         qint64 timestamp = item.lastOpened;
         QDateTime dateTime = QDateTime::fromMSecsSinceEpoch(timestamp);
-        QString formattedDate = dateTime.toString("MMM d, yyyy hh:mm AP");
+        // Get language code from settings
+        QString langCode = SettingsManager::instance()->getLanguageCode();
 
+        // Map language code to QLocale
+        QLocale locale;
+        if (langCode == "fr") {
+            locale = QLocale(QLocale::French, QLocale::France);
+        } else if (langCode == "vi") {
+            locale = QLocale(QLocale::Vietnamese, QLocale::Vietnam);
+        } else if (langCode == "es") {
+            locale = QLocale(QLocale::Spanish, QLocale::Spain);
+        } else if (langCode == "zh") {
+            locale = QLocale(QLocale::Chinese, QLocale::China);
+        } else if (langCode == "ru") {
+            locale = QLocale(QLocale::Russian, QLocale::Russia);
+        } else {
+            locale = QLocale(QLocale::English, QLocale::UnitedStates);
+        }
+
+        QString formattedDate = locale.toString(dateTime, "MMM d, yyyy hh:mm AP");
         
         // Create rich tooltip with command preview
         QString tooltip = QString(
@@ -1374,14 +1413,15 @@ void CommandsMenuDialog::updateCommandsList() {
             "<div style='margin-bottom: 8px;'>"
             "<strong style='color: #9cdcfe;'>%1</strong> &nbsp;•&nbsp; "
             "<span style='color: %2;'>%3</span> &nbsp;•&nbsp; "
-            "<span style='color: #808080;'>Last opened: %4</span>"
+            "<span style='color: #808080;'>%4 %5</span>"
             "</div>"
-            "<div>%5</div>"
+            "<div>%6</div>"
             "</div>"
         )
           .arg(item.name)
           .arg(iconColor.name())
           .arg(pinnedText)
+          .arg(tr("Last Opened:"))
           .arg(formattedDate)
           .arg(item.command.toHtmlEscaped().replace("\n", "<br/>"));
         

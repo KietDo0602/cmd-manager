@@ -42,6 +42,7 @@
 #include <QFile>
 #include <QIODevice>
 #include <QPainter>
+#include <QLocale>
 
 struct FilePlaceholder {
     QString original;
@@ -99,6 +100,7 @@ class MainWindow : public QMainWindow
         QMenu *trayMenu;
         void setupSystemTray();
         bool hasAnyChanges;
+        static CommandsMenuDialog* activeCommandsMenu;
 
         // UI Components
         QVBoxLayout *mainLayout;

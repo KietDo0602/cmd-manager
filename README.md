@@ -50,16 +50,27 @@ Available in 6 languages:
 ## 📁 Project Structure
 
 ```
-CMD-Manager/
-├── CMakeLists.txt
-├── main.cpp
-├── mainwindow.h
-├── mainwindow.cpp
-├── terminaldialog.h
-├── terminaldialog.cpp
-├── filerowwidget.h
-├── filerowwidget.cpp
-└── README.md
+▸ assets/
+▸ build/
+▾ src/
+  ▾ core/
+      settingsmanager.cpp
+      settingsmanager.h
+      utils.cpp
+      utils.h
+  ▾ ui/
+      filerowwidget.cpp
+      filerowwidget.h
+      mainwindow.cpp
+      mainwindow.h
+      settingsdialog.cpp
+      settingsdialog.h
+    CMakeLists.txt
+    main.cpp
+  .gitignore
+  CMakeLists.txt
+  LICENSE
+  README.md
 ```
 
 
