@@ -56,9 +56,9 @@ MainWindow::MainWindow(QWidget *parent)
     mainLayout->addWidget(commandEdit);
 
     // Start button
-    startButton = new QPushButton(tr("Validate Command"));
-    connect(startButton, &QPushButton::clicked, this, &MainWindow::onStartClicked);
-    mainLayout->addWidget(startButton);
+    validateButton = new QPushButton(tr("Validate Command"));
+    connect(validateButton, &QPushButton::clicked, this, &MainWindow::onStartClicked);
+    mainLayout->addWidget(validateButton);
 
     // Dynamic button container
     buttonContainer = new QWidget();
@@ -417,7 +417,7 @@ void MainWindow::onCommandTextChanged() {
             // Reset to start mode
             executeButton->hide();
             clearButton->hide();
-            startButton->show();
+            validateButton->show();
             
             // Safely clear file rows first
             for (FileRowWidget* row : fileRows) {
@@ -536,7 +536,7 @@ void MainWindow::clearCommandsInternal() {
     // Reset buttons
     executeButton->hide();
     clearButton->hide();
-    startButton->show();
+    validateButton->show();
     filesGroupAdded = false;
     
     // Clear command template
@@ -658,7 +658,7 @@ void MainWindow::loadCommand(const QJsonObject &commandData) {
     // Reset buttons
     executeButton->hide();
     clearButton->hide();
-    startButton->show();
+    validateButton->show();
     filesGroupAdded = false;
     
     // Clear command template
@@ -787,7 +787,7 @@ void MainWindow::onStartClicked() {
     filesGroup->setLayout(filesLayout);
 
     // Remove the Start button, replace with Execute
-    startButton->hide();
+    validateButton->hide();
     executeButton->show();
     clearButton->show();
 
@@ -1002,10 +1002,12 @@ bool MainWindow::containsDangerousCommands(const QString &command) const {
         "mkfs", 
         "format",
         ":(){:|:&};:",  // Fork bomb
+        "mount",
+        "umount",
         "chmod -R 777",
         "chmod 777",
         "> /dev/",
-        "mv ", "mv\t",  // Moving files can be dangerous
+        "mv ", "mv\t",  // Moving files dangerous
         "shred",
         "wipefs",
         "fdisk",
@@ -1016,7 +1018,33 @@ bool MainWindow::containsDangerousCommands(const QString &command) const {
         "init 6",
         "kill -9",
         "killall",
-        "pkill"
+        "del",
+        "taskkill",
+        "sfc",
+        "chkdsk",
+        "bcedit",
+        "rd",
+        "launchctl",
+        "diskutil",
+        "pkill",
+        "yes >",
+        "nohup",
+        "exec",
+        "eval",
+        "setuid",
+        "tee /dev/",
+        "ln -sf",
+        "trap",
+        "xargs rm",
+        "reg delete",
+        "reg add",
+        "net user",
+        "net localgroup",
+        "sc delete",
+        "wmic",
+        "powershell",
+        "powershell -encodedcommand",
+        "start /b"
     };
     
     QString lowerCmd = command.toLower();
@@ -1033,9 +1061,11 @@ bool MainWindow::containsDangerousCommands(const QString &command) const {
 QStringList MainWindow::getDangerousCommands(const QString &command) const {
     QStringList dangerous;
     QStringList dangerousPatterns = {
-        "rm", "rmdir", "dd", "mkfs", "format", "fork bomb",
-        "chmod 777", "mv", "shred", "wipefs", "fdisk", "parted",
-        "shutdown", "reboot", "init", "kill", "killall", "pkill"
+        "rm", "rmdir", "dd", "mkfs", "format", "fork bomb", "mount", "umount", "rd", "launchctl",
+        "chmod 777", "mv", "shred", "wipefs", "fdisk", "parted", "sfc", "chkdsk", "powershell",
+        "shutdown", "reboot", "init", "kill", "killall", "del", "taskkill", "bcedit", "diskutil", "pkill", "yes >",
+        "nohup", "exec", "eval", "setuid", "tee /dev/", "ln -sf", "trap", "xargs rm", "reg delete", "reg add",
+        "net user", "net localgroup", "sc delete", "wmic", "powershell", "powershell -encodedcommand", "start /b"
     };
     
     QString lowerCmd = command.toLower();
@@ -1047,6 +1077,8 @@ QStringList MainWindow::getDangerousCommands(const QString &command) const {
     patternMap["mkfs"] = "mkfs (format filesystem)";
     patternMap["format"] = "format (format disk)";
     patternMap[":(){:|:&};:"] = "Fork bomb (system crash)";
+    patternMap["mount"] = "mount (mount filesystems can be dangerous)";
+    patternMap["umount"] = "umount (unmount filesystems that can be dangerous)";
     patternMap["chmod -r 777"] = "chmod 777 (dangerous permissions)";
     patternMap["chmod 777"] = "chmod 777 (dangerous permissions)";
     patternMap["> /dev/"] = "Writing to device files";
@@ -1061,7 +1093,34 @@ QStringList MainWindow::getDangerousCommands(const QString &command) const {
     patternMap["init 6"] = "init 6 (system reboot)";
     patternMap["kill -9"] = "kill -9 (force kill process)";
     patternMap["killall"] = "killall (kill all processes by name)";
+    patternMap["del"] = "del (delete files)";
+    patternMap["taskkill"] = "taskkill (terminate processes)";
+    patternMap["sfc"] = "sfc (system repair tools)";
+    patternMap["chkdsk"] = "chkdsk (system repair tools)";
+    patternMap["bcedit"] = "bcedit (modifies window boot configuration)";
+    patternMap["powershell"] = "powershell (powerful scripting tool)";
+    patternMap["rd"] = "rd (remove directories)";
     patternMap["pkill"] = "pkill (kill processes by pattern)";
+    patternMap["diskutil"] = "diskutil (manage disks and volumes)";
+    patternMap["launchctl"] = "launchctl (manage system deamons and services)";
+    patternMap["yes >"] = "yes > (can flood disk or CPU)";
+    patternMap["nohup"] = "nohup (runs background processes, risky with destructive commands)";
+    patternMap["exec"] = "exec (replaces shell, risky if used with destructive commands)";
+    patternMap["eval"] = "eval (executes strings as commands, dangerous if input is user-controlled)";
+    patternMap["setuid"] = "setuid (can escalate privileges unexpectedly)";
+    patternMap["tee /dev/"] = "tee /dev/ (writes to device files)";
+    patternMap["ln -sf"] = "ln -sf (forcefully creates symlinks, can overwrite critical links)";
+    patternMap["trap"] = "trap (can hijack signals to execute malicious code)";
+    patternMap["xargs rm"] = "xargs rm (can delete large sets of files)";
+    patternMap["reg delete"] = "reg delete (deletes registry keys)";
+    patternMap["reg add"] = "reg add (adds registry keys)";
+    patternMap["net user"] = "net user (can create or delete users)";
+    patternMap["net localgroup"] = "net localgroup (can add users to admin groups)";
+    patternMap["sc delete"] = "sc delete (deletes services)";
+    patternMap["wmic"] = "wmic (manipulates system settings or hardware)";
+    patternMap["powershell -encodedcommand"] = "powershell -EncodedCommand (obfuscated script execution)";
+    patternMap["start /b"] = "start /b (launches background processes)";
+
     
     for (auto it = patternMap.begin(); it != patternMap.end(); ++it) {
         if (lowerCmd.contains(it.key().toLower())) {
@@ -1345,13 +1404,43 @@ void CommandsMenuDialog::updateCommandsList() {
     SettingsManager* settings = SettingsManager::instance();
     QColor iconColor;
     switch (settings->getTheme()) {
-        case SettingsManager::Light:
-            iconColor = QColor("#333333");
+        case SettingsManager::SolarizedLight:
+            iconColor = QColor("#657B83");
             break;
-        case SettingsManager::Contrast:
-            iconColor = QColor("#FFFFFF");
+        case SettingsManager::SolarizedDark:
+            iconColor = QColor("#839496");
             break;
-        default: // Dark
+        case SettingsManager::Pastel:
+            iconColor = QColor("#5C5470");
+            break;
+        case SettingsManager::Nature:
+            iconColor = QColor("#2E7D32");
+            break;
+        case SettingsManager::Nord:
+            iconColor = QColor("#D8DEE9");
+            break;
+        case SettingsManager::Paper:
+            iconColor = QColor("#3E3E3E");
+            break;
+        case SettingsManager::RosePine:
+            iconColor = QColor("#F5E0DC");
+            break;
+        case SettingsManager::NightOwl:
+            iconColor = QColor("#C792EA");
+            break;
+        case SettingsManager::Horizon:
+            iconColor = QColor("#E0E0E0");
+            break;
+        case SettingsManager::Monochrome:
+            iconColor = QColor("#E0E0E0");
+            break;
+        case SettingsManager::Neon:
+            iconColor = QColor("#00FFFF");
+            break;
+        case SettingsManager::Rainbow:
+            iconColor = QColor("#FF5555");
+            break;
+        default: // fallback Dark / general
             iconColor = QColor("#E0E0E0");
             break;
     }
@@ -1994,15 +2083,15 @@ void MainWindow::updateKeyboardShortcuts() {
     // Set tooltips to show shortcuts
     newButton->setToolTip(QString(tr("New Command (%1)")).arg(settings->getNewCommandShortcut()));
     saveButton->setToolTip(QString(tr("Save Command (%1)")).arg(settings->getSaveCommandShortcut()));
-    allCommandsButton->setToolTip(QString(tr("All Commands (%1)")).arg(settings->getOpenCommandsShortcut()));
+    allCommandsButton->setToolTip(QString(tr("Commands Menu (%1)")).arg(settings->getOpenCommandsShortcut()));
     
     QString startExecuteShortcut = settings->getStartExecuteShortcut();
-    startButton->setToolTip(QString(tr("Validate Command (%1)")).arg(startExecuteShortcut));
+    validateButton->setToolTip(QString(tr("Validate Command (%1)")).arg(startExecuteShortcut));
     executeButton->setToolTip(QString(tr("Run Command (%1)")).arg(startExecuteShortcut));
 }
 
 void MainWindow::onStartExecuteShortcut() {
-    if (startButton->isVisible()) {
+    if (validateButton->isVisible()) {
         // If Start button is visible, click it first
         onStartClicked();
         

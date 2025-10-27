@@ -235,8 +235,8 @@
     </message>
 
     <message>
-        <source>All Commands (%1)</source>
-        <translation>所有命令 (%1)</translation>
+        <source>Commands Menu (%1)</source>
+        <translation>命令菜单 (%1)</translation>
     </message>
 
     <message>
@@ -608,16 +608,6 @@
     </message>
 
     <message>
-      <source>Nord</source>
-      <translation>Nord</translation>
-    </message>
-
-    <message>
-      <source>Solarized Dark</source>
-      <translation>Solarized 深色</translation>
-    </message>
-
-    <message>
       <source>Gruvbox Dark</source>
       <translation>Gruvbox 深色</translation>
     </message>
@@ -825,6 +815,66 @@
     <message>
       <source>Light</source>
       <translation>浅色</translation>
+    </message>
+
+    <message>
+        <source>Solarized Light</source>
+        <translation>Solarized 浅色</translation>
+    </message>
+
+    <message>
+        <source>Solarized Dark</source>
+        <translation>Solarized 深色</translation>
+    </message>
+
+    <message>
+        <source>Pastel</source>
+        <translation>粉彩</translation>
+    </message>
+
+    <message>
+        <source>Green Nature</source>
+        <translation>绿色自然</translation>
+    </message>
+
+    <message>
+        <source>Nord</source>
+        <translation>Nord</translation>
+    </message>
+
+    <message>
+        <source>Paper</source>
+        <translation>纸张</translation>
+    </message>
+
+    <message>
+        <source>RosePine</source>
+        <translation>RosePine</translation>
+    </message>
+
+    <message>
+        <source>Night Owl</source>
+        <translation>夜猫子</translation>
+    </message>
+
+    <message>
+        <source>Horizon</source>
+        <translation>地平线</translation>
+    </message>
+
+    <message>
+        <source>Monochrome</source>
+        <translation>单色</translation>
+    </message>
+
+    <message>
+        <source>Neon</source>
+        <translation>霓虹</translation>
+    </message>
+
+    <message>
+        <source>Rainbow</source>
+        <translation>彩虹</translation>
     </message>
 
     <message>
@@ -1152,8 +1202,8 @@
     </message>
 
     <message>
-        <source>All Commands (%1)</source>
-        <translation>所有命令 (%1)</translation>
+        <source>Commands Menu (%1)</source>
+        <translation>命令菜单 (%1)</translation>
     </message>
 
     <message>

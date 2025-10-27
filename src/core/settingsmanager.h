@@ -31,18 +31,30 @@ public:
     enum Theme {
         Dark,           // Default: Dark Theme
         Light,
+        SolarizedDark,
+        SolarizedLight,
+        Pastel,
+        Nature,
+        Nord,
+        Paper,
+        RosePine,
+        NightOwl,
+        Horizon,
+        Monochrome,
+        Neon,
+        Rainbow,
         Contrast
     };
 
     enum TerminalColorScheme {
-        NeonGreen,      // Default: green on black
+        NeonGreen,      // Default: Neon green on black
         Classic,        // White on black
         LightMode,      // Black on white
         Matrix,         // Dark blue background, cyan text
         Dracula,        // Purple/pink theme
         Monokai,        // Dark with orange/yellow
-        Nord,           // Cool blues and grays
-        SolarizedDark,  // Muted yellows on dark
+        Nord2,           // Cool blues and grays
+        SolarizedDark2,  // Muted yellows on dark
         GruvboxDark,    // Warm retro colors
         OneDark         // Atom-inspired dark theme
     };

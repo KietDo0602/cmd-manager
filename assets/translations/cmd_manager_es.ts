@@ -235,8 +235,8 @@
     </message>
 
     <message>
-        <source>All Commands (%1)</source>
-        <translation>Todos los Comandos (%1)</translation>
+        <source>Commands Menu (%1)</source>
+        <translation> Menú de comandos (%1)</translation>
     </message>
 
     <message>
@@ -608,16 +608,6 @@
     </message>
 
     <message>
-      <source>Nord</source>
-      <translation>Nord</translation>
-    </message>
-
-    <message>
-      <source>Solarized Dark</source>
-      <translation>Solarizado Oscuro</translation>
-    </message>
-
-    <message>
       <source>Gruvbox Dark</source>
       <translation>Gruvbox Oscuro</translation>
     </message>
@@ -825,6 +815,66 @@
     <message>
       <source>Light</source>
       <translation>Claro</translation>
+    </message>
+
+    <message>
+        <source>Solarized Light</source>
+        <translation>Solarizado Claro</translation>
+    </message>
+
+    <message>
+        <source>Solarized Dark</source>
+        <translation>Solarizado Oscuro</translation>
+    </message>
+
+    <message>
+        <source>Pastel</source>
+        <translation>Pastel</translation>
+    </message>
+
+    <message>
+        <source>Green Nature</source>
+        <translation>Naturaleza Verde</translation>
+    </message>
+
+    <message>
+        <source>Nord</source>
+        <translation>Nord</translation>
+    </message>
+
+    <message>
+        <source>Paper</source>
+        <translation>Papel</translation>
+    </message>
+
+    <message>
+        <source>RosePine</source>
+        <translation>RosePine</translation>
+    </message>
+
+    <message>
+        <source>Night Owl</source>
+        <translation>Búho Nocturno</translation>
+    </message>
+
+    <message>
+        <source>Horizon</source>
+        <translation>Horizonte</translation>
+    </message>
+
+    <message>
+        <source>Monochrome</source>
+        <translation>Monocromo</translation>
+    </message>
+
+    <message>
+        <source>Neon</source>
+        <translation>Neón</translation>
+    </message>
+
+    <message>
+        <source>Rainbow</source>
+        <translation>Arcoíris</translation>
     </message>
 
     <message>
@@ -1152,8 +1202,8 @@
     </message>
 
     <message>
-        <source>All Commands (%1)</source>
-        <translation>Todos los Comandos (%1)</translation>
+        <source>Commands Menu (%1)</source>
+        <translation> Menú de comandos (%1)</translation>
     </message>
 
     <message>

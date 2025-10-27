@@ -235,8 +235,8 @@
     </message>
 
     <message>
-        <source>All Commands (%1)</source>
-        <translation>Все Команды (%1)</translation>
+        <source>Commands Menu (%1)</source>
+        <translation>Меню команд (%1)</translation>
     </message>
 
     <message>
@@ -608,16 +608,6 @@
     </message>
 
     <message>
-      <source>Nord</source>
-      <translation>Nord</translation>
-    </message>
-
-    <message>
-      <source>Solarized Dark</source>
-      <translation>Solarized Темный</translation>
-    </message>
-
-    <message>
       <source>Gruvbox Dark</source>
       <translation>Gruvbox Темный</translation>
     </message>
@@ -825,6 +815,66 @@
     <message>
       <source>Light</source>
       <translation>Светлый</translation>
+    </message>
+
+    <message>
+        <source>Solarized Light</source>
+        <translation>Солнечный Светлый</translation>
+    </message>
+
+    <message>
+        <source>Solarized Dark</source>
+        <translation>Солнечный Тёмный</translation>
+    </message>
+
+    <message>
+        <source>Pastel</source>
+        <translation>Пастель</translation>
+    </message>
+
+    <message>
+        <source>Green Nature</source>
+        <translation>Зелёная Природа</translation>
+    </message>
+
+    <message>
+        <source>Nord</source>
+        <translation>Норд</translation>
+    </message>
+
+    <message>
+        <source>Paper</source>
+        <translation>Бумага</translation>
+    </message>
+
+    <message>
+        <source>RosePine</source>
+        <translation>RosePine</translation>
+    </message>
+
+    <message>
+        <source>Night Owl</source>
+        <translation>Ночная Сова</translation>
+    </message>
+
+    <message>
+        <source>Horizon</source>
+        <translation>Горизонт</translation>
+    </message>
+
+    <message>
+        <source>Monochrome</source>
+        <translation>Монохром</translation>
+    </message>
+
+    <message>
+        <source>Neon</source>
+        <translation>Неон</translation>
+    </message>
+
+    <message>
+        <source>Rainbow</source>
+        <translation>Радуга</translation>
     </message>
 
     <message>
@@ -1152,8 +1202,8 @@
     </message>
 
     <message>
-        <source>All Commands (%1)</source>
-        <translation>Все Команды (%1)</translation>
+        <source>Commands Menu (%1)</source>
+        <translation>Меню команд (%1)</translation>
     </message>
 
     <message>

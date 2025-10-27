@@ -235,8 +235,8 @@
     </message>
 
     <message>
-        <source>All Commands (%1)</source>
-        <translation>Tất Cả Lệnh (%1)</translation>
+        <source>Commands Menu (%1)</source>
+        <translation>Menu Lệnh (%1)</translation>
     </message>
 
     <message>
@@ -609,16 +609,6 @@
     </message>
 
     <message>
-      <source>Nord</source>
-      <translation>Nord</translation>
-    </message>
-
-    <message>
-      <source>Solarized Dark</source>
-      <translation>Solarized Dark</translation>
-    </message>
-
-    <message>
       <source>Gruvbox Dark</source>
       <translation>Gruvbox Dark</translation>
     </message>
@@ -826,6 +816,66 @@
     <message>
       <source>Light</source>
       <translation>Sáng</translation>
+    </message>
+
+    <message>
+        <source>Solarized Light</source>
+        <translation>Solarized Sáng</translation>
+    </message>
+
+    <message>
+        <source>Solarized Dark</source>
+        <translation>Solarized Tối</translation>
+    </message>
+
+    <message>
+        <source>Pastel</source>
+        <translation>Màu Pastel</translation>
+    </message>
+
+    <message>
+        <source>Green Nature</source>
+        <translation>Xanh Thiên Nhiên</translation>
+    </message>
+
+    <message>
+        <source>Nord</source>
+        <translation>Nord</translation>
+    </message>
+
+    <message>
+        <source>Paper</source>
+        <translation>Giấy</translation>
+    </message>
+
+    <message>
+        <source>RosePine</source>
+        <translation>RosePine</translation>
+    </message>
+
+    <message>
+        <source>Night Owl</source>
+        <translation>Cú Đêm</translation>
+    </message>
+
+    <message>
+        <source>Horizon</source>
+        <translation>Chân Trời</translation>
+    </message>
+
+    <message>
+        <source>Monochrome</source>
+        <translation>Đơn Sắc</translation>
+    </message>
+
+    <message>
+        <source>Neon</source>
+        <translation>Neon</translation>
+    </message>
+
+    <message>
+        <source>Rainbow</source>
+        <translation>Cầu Vồng</translation>
     </message>
 
     <message>
@@ -1153,8 +1203,8 @@
     </message>
 
     <message>
-        <source>All Commands (%1)</source>
-        <translation>Tất Cả Lệnh (%1)</translation>
+        <source>Commands Menu (%1)</source>
+        <translation>Menu Lệnh (%1)</translation>
     </message>
 
     <message>

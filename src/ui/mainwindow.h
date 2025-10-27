@@ -111,7 +111,7 @@ class MainWindow : public QMainWindow
         QPushButton *saveButton;
         QPushButton *chooseDirButton;
         QTextEdit *commandEdit;
-        QPushButton *startButton;
+        QPushButton *validateButton;
         QPushButton *executeButton;
         QPushButton *clearButton;
         QPushButton *settingsButton;
