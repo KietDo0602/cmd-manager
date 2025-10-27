@@ -172,7 +172,6 @@ QString SettingsManager::getThemeStyleSheet(Theme theme, int fontSize, const QSt
                 QWidget {
                     background-color: #F5F7FA;
                     color: #1F2937;
-                    font-size: 14px;
                 }
 
                 /* Buttons */
@@ -372,7 +371,6 @@ QString SettingsManager::getThemeStyleSheet(Theme theme, int fontSize, const QSt
                 QWidget {
                     background-color: #002b36;
                     color: #839496;
-                    font-size: 14px;
                 }
 
                 QPushButton {
@@ -560,7 +558,6 @@ QString SettingsManager::getThemeStyleSheet(Theme theme, int fontSize, const QSt
                 QWidget {
                     background-color: #fdf6e3;
                     color: #657b83;
-                    font-size: 14px;
                 }
 
                 QPushButton {
@@ -748,7 +745,6 @@ QString SettingsManager::getThemeStyleSheet(Theme theme, int fontSize, const QSt
                 QWidget {
                     background-color: #F7F5F9;
                     color: #404040;
-                    font-size: 14px;
                 }
 
                 QPushButton {
@@ -938,7 +934,6 @@ QString SettingsManager::getThemeStyleSheet(Theme theme, int fontSize, const QSt
                 QWidget {
                     background-color: #F3F7F2;
                     color: #2E3A29;
-                    font-size: 14px;
                 }
 
                 QPushButton {
@@ -1126,7 +1121,6 @@ QString SettingsManager::getThemeStyleSheet(Theme theme, int fontSize, const QSt
                 QWidget {
                     background-color: #2E3440;
                     color: #D8DEE9;
-                    font-size: 14px;
                 }
 
                 QPushButton {
@@ -1318,7 +1312,6 @@ QString SettingsManager::getThemeStyleSheet(Theme theme, int fontSize, const QSt
                 QWidget {
                     background-color: #FAFAFA;
                     color: #2E2E2E;
-                    font-size: 14px;
                 }
 
                 QPushButton {
@@ -1510,7 +1503,6 @@ QString SettingsManager::getThemeStyleSheet(Theme theme, int fontSize, const QSt
                 QWidget {
                     background-color: #191724;
                     color: #e0def4;
-                    font-size: 14px;
                 }
 
                 QPushButton {
@@ -1705,7 +1697,6 @@ QString SettingsManager::getThemeStyleSheet(Theme theme, int fontSize, const QSt
                     background-color: #011627;   /* deep navy */
                     color: #d6deeb;              /* soft light blue text */
                     font-family: "Fira Code", "Consolas", "Segoe UI", sans-serif;
-                    font-size: 14px;
                 }
 
                 /* Buttons */
@@ -1871,7 +1862,6 @@ QString SettingsManager::getThemeStyleSheet(Theme theme, int fontSize, const QSt
                     background-color: #1C1E26;   /* deep dusk background */
                     color: #E0E0E0;              /* soft gray text */
                     font-family: "Fira Code", "Segoe UI", "Consolas", sans-serif;
-                    font-size: 14px;
                 }
 
                 /* Buttons */
@@ -2038,7 +2028,6 @@ QString SettingsManager::getThemeStyleSheet(Theme theme, int fontSize, const QSt
                     background-color: #121212;   /* deep neutral black-gray */
                     color: #E0E0E0;              /* light gray text */
                     font-family: "Segoe UI", "Helvetica Neue", "Arial", sans-serif;
-                    font-size: 14px;
                 }
 
                 /* Buttons */
@@ -2286,7 +2275,6 @@ QString SettingsManager::getThemeStyleSheet(Theme theme, int fontSize, const QSt
                     background-color: #0A0A0F;   /* deep black-blue background */
                     color: #E0E0E0;              /* bright neutral text */
                     font-family: "Segoe UI", "Roboto Mono", "Consolas", monospace;
-                    font-size: 14px;
                 }
 
                 /* Buttons */
@@ -2541,7 +2529,6 @@ QString SettingsManager::getThemeStyleSheet(Theme theme, int fontSize, const QSt
                     background-color: #1E1E1E;   /* dark neutral background */
                     color: #FFFFFF;              /* default white text */
                     font-family: "Segoe UI", "Consolas", "Fira Code", monospace;
-                    font-size: 14px;
                 }
 
                 /* Buttons */
@@ -2792,7 +2779,6 @@ QString SettingsManager::getThemeStyleSheet(Theme theme, int fontSize, const QSt
                 QWidget {
                     background-color: #000000;
                     color: #FFFFFF;
-                    font-size: 14px;
                 }
 
                 /* Buttons */
@@ -2981,7 +2967,6 @@ QString SettingsManager::getThemeStyleSheet(Theme theme, int fontSize, const QSt
                 QWidget {
                     background-color: #020D22;
                     color: #E0E0E0;
-                    font-size: 14px;
                 }
 
                 QPushButton {
