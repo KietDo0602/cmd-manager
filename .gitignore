@@ -52,6 +52,13 @@ test-results/
 *.gcda
 *.gcov
 
+# Deploy
+build-release/
+cmd-manager_1.0.0/
+packaging/
+releases/
+
+
 # Optional: ignore user config
 *.user
 *.swp
