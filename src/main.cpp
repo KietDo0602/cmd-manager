@@ -94,8 +94,8 @@ int main(int argc, char *argv[]) {
     // Set application identity
     app.setApplicationName("CMD-Manager");
     app.setApplicationDisplayName("CMD Manager");
-    app.setOrganizationName("CMD Manager");
-    app.setApplicationVersion("1.0");
+    app.setOrganizationName("KietDo0602");
+    app.setApplicationVersion("1.0.0");
     app.setDesktopFileName("cmd-manager");
 
     // Load translation

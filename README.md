@@ -13,9 +13,11 @@ Available in 6 languages:
 ## 🚀 Features
 
 - Save complex shell commands
-- Search and Run saved commands easily
-- Manage, save and delete commands
+- Search and Run saved commands efficiently
+- Choose / Create Files easily
+- Manage, Save and Delete commands
 - Cross-platform support (Linux, macOS, Windows)
+- Customizable themes and fonts
 
 ## ⬇️ Installation
 
@@ -141,16 +143,7 @@ Make sure to list any OS-specific problems inside the branch name or description
 
 ## 📝 To Do
 
-- [x] Sound / Notification On Command Complete
-- [x] Export All Commands to JSON file
-- [x] Load Commands from JSON file
-- [x] Language Support
-- [x] Search for Commands Menu
-- [x] Sort by File name / Recently Opened
-- [x] Pinned command - will go to the top
-- [x] Drag and Drop Support
-- [x] Command Validation and Preview
-- [ ] Release 1.0 version
+- [x] Release 1.0 version
 
 
 ## 📄 License
