@@ -9,6 +9,8 @@ Available in 6 languages:
 - Vietnamese
 - Chinese
 - Russian
+  
+<img width="1280" height="731" alt="image" src="https://github.com/user-attachments/assets/0fe560fa-d176-4821-ba3a-be7ae53c0a92" />
 
 ## 🚀 Features
 
@@ -31,6 +33,20 @@ Available in 6 languages:
 - Not yet available (contribution needed!)
 
 
+## 🎨 Screenshots:
+<table>
+  <tr>
+    <td><img src="https://github.com/user-attachments/assets/bdf7cc3e-6008-4c5c-b08f-1f4bd207a319" width="300"/></td>
+    <td><img src="https://github.com/user-attachments/assets/c7fea718-eb17-4f86-8a20-13e8eb702c41" width="300"/></td>
+    <td><img src="https://github.com/user-attachments/assets/bdac362b-9b90-4ba2-80d3-62f09268b7de" width="300"/></td>
+  </tr>
+  <tr>
+    <td><img src="https://github.com/user-attachments/assets/13971e72-0302-44b7-97bc-77f6b4f8a624" width="300"/></td>
+    <td><img src="https://github.com/user-attachments/assets/f59859d8-5db9-43b7-8cbf-912f369ae960" width="300"/></td>
+    <td><img src="https://github.com/user-attachments/assets/c0a60973-b22b-44f8-85b9-cac2cb1ee107" width="300"/></td>
+  </tr>
+</table>
+
 ## 📘 Instructions
 1. **Open the app** on Linux, macOS, or Windows.  
 2. How to use:
@@ -43,9 +59,6 @@ Available in 6 languages:
 4. Use **All Commands** to find previously saved commands.
 5. Set a **Current Directory** if needed for execution - this is where the command will be executed.  
 6. The output will appear in a terminal window.
-
-
-## 😃 Example
 
 
 ## ⚙️ Configurations
