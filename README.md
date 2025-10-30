@@ -22,10 +22,13 @@ Available in 6 languages:
 ## ⬇️ Installation
 
 ### 🪟 Windows
+- [Download Here](https://github.com/kietdo0602/cmd-manager/releases/download/v1.0.0/cmd-manager-1.0.0-window-setup.exe)
 
 ### 🐧 Linux & Ubuntu
+- [Download Here](https://github.com/kietdo0602/cmd-manager/releases/download/v1.0.0/cmd-manager-1.0.0-linux.tar.gz)
 
 ### 🍎 Mac OS
+- Not yet available (contribution needed!)
 
 
 ## 📘 Instructions

@@ -16,8 +16,10 @@ file(GLOB_RECURSE HEADER_FILES
 # Compile Qt resource file
 qt5_add_resources(RESOURCE_FILES ../assets/resources.qrc)
 
+set(APP_ICON_RESOURCE_WINDOWS "${CMAKE_CURRENT_SOURCE_DIR}/app_icon.rc")
+
 # Define the executable
-add_executable(CMD-Manager ${SRC_FILES} ${HEADER_FILES} ${RESOURCE_FILES})
+add_executable(CMD-Manager WIN32 ${SRC_FILES} ${HEADER_FILES} ${RESOURCE_FILES} ${APP_ICON_RESOURCE_WINDOWS})
 
 # Include directories
 target_include_directories(CMD-Manager PRIVATE
