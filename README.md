@@ -1,4 +1,4 @@
-# ⚙️🛢 CMD-Manager
+# ⚙️🛢️ CMD-Manager
 
 CMD-Manager is a lightweight C++ utility software designed to manage and simplify complex terminal commands. Whether you're tired of typing long scripts, choosing and finding files/folders for for command input/output,  or want to organize frequently used commands, this tool helps you streamline your workflow.
 
