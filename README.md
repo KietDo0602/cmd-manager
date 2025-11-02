@@ -62,8 +62,8 @@ Available in 6 languages:
 
 
 ## ⚙️ Configurations
-- JSON file is stored inside "/CMDManager/commands.json"
-
+- JSON file is stored inside "~/.config/CMDManager/commands.json"
+- Settings file is stored inside "~/.config/CMDManager/settings.ini"
 
 ## 📁 Project Structure
 
